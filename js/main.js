@@ -967,33 +967,49 @@
       // 🔗 DRAW MOLECULAR BONDS!
       if (Renderer.drawBonds) Renderer.drawBonds();
       
-      // 🎃 v117: Draw other multiplayer players! 💚
+      // 🎃 v118: Draw other multiplayer players as ships! 💚
       if (CHEMVENTUR.Multiplayer && CHEMVENTUR.Multiplayer.connected) {
         const players = CHEMVENTUR.Multiplayer.getOtherPlayers();
         for (const [id, player] of Object.entries(players)) {
           if (player.x && player.y) {
-            Renderer.ctx.save();
-            Renderer.ctx.translate(player.x, player.y);
-            
-            // Player ship
-            Renderer.ctx.fillStyle = player.color;
-            Renderer.ctx.shadowBlur = 15;
-            Renderer.ctx.shadowColor = player.color;
-            
-            Renderer.ctx.beginPath();
-            Renderer.ctx.moveTo(15, 0);
-            Renderer.ctx.lineTo(-10, -8);
-            Renderer.ctx.lineTo(-10, 8);
-            Renderer.ctx.closePath();
-            Renderer.ctx.fill();
-            
-            Renderer.ctx.restore();
-            
+            const ctx = Renderer.ctx;
+            ctx.save();
+
+            // Other players slightly transparent — local player is always brightest
+            ctx.globalAlpha = 0.7;
+
+            // Draw ship triangle — same shape as local ship
+            const angle = player.angle || 0;
+            ctx.translate(player.x, player.y);
+            ctx.rotate(angle + Math.PI / 2);
+
+            // Green glow
+            const pColor = player.color || '#00ff41';
+            ctx.shadowColor = pColor;
+            ctx.shadowBlur = 12;
+            ctx.fillStyle = pColor;
+            ctx.strokeStyle = pColor;
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+            ctx.moveTo(0, -20);
+            ctx.lineTo(-12, 12);
+            ctx.lineTo(12, 12);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.shadowBlur = 0;
+            ctx.restore();
+
             // Player name
-            Renderer.ctx.fillStyle = player.color;
-            Renderer.ctx.font = '10px Courier New';
-            Renderer.ctx.textAlign = 'center';
-            Renderer.ctx.fillText(player.name || 'Player', player.x, player.y - 20);
+            ctx.save();
+            ctx.globalAlpha = 0.8;
+            ctx.fillStyle = pColor;
+            ctx.font = '10px Courier New';
+            ctx.textAlign = 'center';
+            ctx.fillText(player.name || 'Player', player.x, player.y - 25);
+            ctx.restore();
           }
         }
       }
