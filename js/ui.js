@@ -768,6 +768,39 @@
           }
         };
       }
+
+      // 🤖 v118 FUN BOTS BUTTONS
+      const Bots = CHEMVENTUR.Bots;
+      if (Bots) {
+        const updateBotStatus = () => {
+          const st = document.getElementById('bots-status');
+          if (st) st.textContent = Bots.bots.length > 0
+            ? Bots.bots.length + ' bot(s) active'
+            : 'Click to spawn bots!';
+        };
+        document.getElementById('btn-bot-reporter')?.addEventListener('click', () => {
+          if (!Bots.enabled) Bots.init();
+          Bots.spawnReporter(); updateBotStatus();
+        });
+        document.getElementById('btn-bot-religious')?.addEventListener('click', () => {
+          if (!Bots.enabled) Bots.init();
+          Bots.spawnReligious(); updateBotStatus();
+        });
+        document.getElementById('btn-bot-homeless')?.addEventListener('click', () => {
+          if (!Bots.enabled) Bots.init();
+          Bots.spawnHomeless(); updateBotStatus();
+        });
+        document.getElementById('btn-bot-lover')?.addEventListener('click', () => {
+          if (!Bots.enabled) Bots.init();
+          Bots.spawnLover(); updateBotStatus();
+        });
+        document.getElementById('btn-bots-all')?.addEventListener('click', () => {
+          Bots.spawnAll(); updateBotStatus();
+        });
+        document.getElementById('btn-bots-clear')?.addEventListener('click', () => {
+          Bots.removeAll(); updateBotStatus();
+        });
+      }
     },
     
     toggleEnvPanel() {

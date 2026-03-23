@@ -530,6 +530,12 @@
       this.bindButton('btn-stage-0', this.stageMenu.bind(this));
       this.bindButton('btn-stage-1', this.stageMenu.bind(this));
       this.bindButton('btn-stage-2', this.stageMenu.bind(this));
+      this.bindButton('btn-bot-reporter', this.botReporterMenu.bind(this));
+      this.bindButton('btn-bot-religious', this.botReligiousMenu.bind(this));
+      this.bindButton('btn-bot-homeless', this.botHomelessMenu.bind(this));
+      this.bindButton('btn-bot-lover', this.botLoverMenu.bind(this));
+      this.bindButton('btn-bots-all', this.botsAllMenu.bind(this));
+      this.bindButton('btn-bots-clear', this.botsAllMenu.bind(this));
 
       console.log('🖱️ Context Menus initialized!');
     },
@@ -802,6 +808,57 @@
         { icon: '🎻', label: 'Stage 0: Strings', action: () => { Game.changeStage(-Game.stage); CHEMVENTUR.UI?.updateStageButtons?.(); }, active: Game.stage === 0 },
         { icon: '⚛️', label: 'Stage 1: Atoms', action: () => { Game.changeStage(1 - Game.stage); CHEMVENTUR.UI?.updateStageButtons?.(); }, active: Game.stage === 1 },
         { icon: '🧬', label: 'Stage 2: Molecules', action: () => { Game.changeStage(2 - Game.stage); CHEMVENTUR.UI?.updateStageButtons?.(); }, active: Game.stage === 2 }
+      ]);
+    },
+
+    botReporterMenu(e) {
+      const Bots = CHEMVENTUR.Bots;
+      const count = Bots?.bots.filter(b => b.type === 'reporter').length || 0;
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '📰', label: 'Spawn Reporter (' + count + ' active)', action: () => { if (!Bots.enabled) Bots.init(); Bots.spawnReporter(); } },
+        { icon: '🗑️', label: 'Remove All Reporters', action: () => Bots?.removeByType('reporter') },
+        { icon: '📸', label: 'View Saved Screenshots', action: () => {
+          const keys = Object.keys(localStorage).filter(k => k.startsWith('reporter_screenshot_'));
+          CHEMVENTUR.UI?.showStatus('📸 ' + keys.length + ' screenshots in localStorage');
+        }}
+      ]);
+    },
+
+    botReligiousMenu(e) {
+      const Bots = CHEMVENTUR.Bots;
+      const count = Bots?.bots.filter(b => b.type === 'religious').length || 0;
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '⛪', label: 'Spawn Peace Bot (' + count + ' active)', action: () => { if (!Bots.enabled) Bots.init(); Bots.spawnReligious(); } },
+        { icon: '🗑️', label: 'Remove All Peace Bots', action: () => Bots?.removeByType('religious') }
+      ]);
+    },
+
+    botHomelessMenu(e) {
+      const Bots = CHEMVENTUR.Bots;
+      const bot = Bots?.bots.find(b => b.type === 'homeless');
+      const count = bot ? bot.collectedElectrons : 0;
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '🏠', label: 'Spawn Homeless Bot', action: () => { if (!Bots.enabled) Bots.init(); Bots.spawnHomeless(); } },
+        { icon: '⚡', label: 'Electrons collected: ' + count, action: null },
+        { icon: '🗑️', label: 'Remove All Homeless Bots', action: () => Bots?.removeByType('homeless') }
+      ]);
+    },
+
+    botLoverMenu(e) {
+      const Bots = CHEMVENTUR.Bots;
+      const count = Bots?.bots.filter(b => b.type === 'lover').length || 0;
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '💕', label: 'Spawn Lover Bot (' + count + ' active)', action: () => { if (!Bots.enabled) Bots.init(); Bots.spawnLover(); } },
+        { icon: '🗑️', label: 'Remove All Lover Bots', action: () => Bots?.removeByType('lover') }
+      ]);
+    },
+
+    botsAllMenu(e) {
+      const Bots = CHEMVENTUR.Bots;
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '🤖', label: 'Spawn All 4 Bots', action: () => Bots?.spawnAll() },
+        { icon: '🗑️', label: 'Remove All Bots', action: () => Bots?.removeAll() },
+        { icon: '📊', label: Bots?.bots.length + ' bot(s) active', action: null }
       ]);
     }
   };

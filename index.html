@@ -134,7 +134,23 @@
     <div style="width:100%;height:8px;background:#002200;border:1px solid #ffff00;border-radius:3px;margin-top:4px;overflow:hidden;">
       <div id="mic-volume-bar-v117" style="width:0%;height:100%;background:linear-gradient(90deg,#00ff41,#ffff00,#ff8800);transition:width 0.1s;"></div>
     </div>
-    
+
+    <!-- 🤖 FUN BOTS -->
+    <div class="info-window compact" style="border-color:#ff66aa;background:linear-gradient(135deg,rgba(255,102,170,0.1),rgba(255,170,0,0.1));">
+      <strong style="color:#ff66aa">🤖 FUN BOTS</strong>
+      <div style="display:flex;gap:3px;margin-top:5px;flex-wrap:wrap;">
+        <button class="btn" id="btn-bot-reporter" style="flex:1;font-size:10px;padding:5px 2px;" title="Reporter Bot">📰</button>
+        <button class="btn" id="btn-bot-religious" style="flex:1;font-size:10px;padding:5px 2px;" title="Peace Bot">⛪</button>
+        <button class="btn" id="btn-bot-homeless" style="flex:1;font-size:10px;padding:5px 2px;" title="Homeless Bot">🏠</button>
+        <button class="btn" id="btn-bot-lover" style="flex:1;font-size:10px;padding:5px 2px;" title="Lover Bot">💕</button>
+      </div>
+      <div style="display:flex;gap:3px;margin-top:3px;">
+        <button class="btn" id="btn-bots-all" style="flex:1;font-size:9px;padding:4px;background:linear-gradient(90deg,#ff66aa,#ffaa00);color:#000;font-weight:bold;">ALL BOTS</button>
+        <button class="btn" id="btn-bots-clear" style="flex:1;font-size:9px;padding:4px;">CLEAR</button>
+      </div>
+      <div id="bots-status" style="font-size:8px;color:#888;margin-top:3px;text-align:center;">Click to spawn bots!</div>
+    </div>
+
     <!-- 😈 ENVIRONMENT BUTTON IN PANEL -->
     <button class="btn full-width mt-sm" id="env-btn" style="background:linear-gradient(90deg,#ff0044,#ff6600,#ff0044);color:#fff;font-weight:bold;font-size:14px;">
       😈 ENVIRONMENT (16 Calculators!)
@@ -650,7 +666,8 @@
   <script src="js/touch-v117.js"></script>
   <script src="js/microphone-v117.js"></script>
   
-  <!-- 🤖 v118 AI & CHAT & MUSIC MODULES! 💬🎵 -->
+  <!-- 🤖 v118 AI & CHAT & MUSIC & BOTS MODULES! 💬🎵🤖 -->
+  <script src="js/bots-v118.js"></script>
   <script src="js/ai-players-v118.js"></script>
   <script src="js/chat-v118.js"></script>
   <script src="js/audio-visualizer-v118.js"></script>
