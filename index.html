@@ -118,15 +118,20 @@
       <div id="microphone-status" style="font-size:8px;color:#888;text-align:center;">Mic: OFF</div>
     </div>
     
-    <!-- 👥 MULTIPLAYER SECTION - NEW IN v117! -->
+    <!-- 👥 MULTIPLAYER ROOMS - v118! -->
     <div class="info-window compact" style="border-color:#ff00ff;background:linear-gradient(135deg,rgba(255,0,255,0.1),rgba(0,255,255,0.1));">
       <strong style="color:#ff00ff">👥 MULTIPLAYER</strong><br>
-      <input type="text" id="player-name-input" placeholder="Your name" value="Pumpkin" 
+      <input type="text" id="player-name-input" placeholder="Your name" value="Pumpkin"
              style="width:100%;padding:6px;margin:4px 0;background:#002200;color:#00ff41;border:1px solid #ff00ff;border-radius:3px;font-size:10px;">
       <button class="btn full-width" id="btn-multiplayer" style="background:linear-gradient(90deg,#ff00ff,#00ffff);color:#000;font-weight:bold;font-size:11px;padding:6px;">
-        🌐 CONNECT TO MULTIPLAYER
+        🌐 CREATE ROOM
       </button>
-      <div id="multiplayer-status" style="font-size:9px;margin-top:4px;color:#888;text-align:center;">Click above to connect!</div>
+      <div style="display:flex;gap:3px;margin-top:4px;">
+        <input type="text" id="room-code-input" placeholder="Room code" maxlength="6"
+               style="flex:1;padding:5px;background:#002200;color:#00ffff;border:1px solid #00ffff;border-radius:3px;font-size:11px;text-transform:uppercase;letter-spacing:2px;text-align:center;">
+        <button class="btn" id="btn-join-room" style="font-size:10px;padding:5px 8px;">JOIN</button>
+      </div>
+      <div id="multiplayer-status" style="font-size:9px;margin-top:4px;color:#888;text-align:center;">Create or join a room!</div>
       <div id="player-list-v117" style="font-size:9px;margin-top:4px;max-height:60px;overflow-y:auto;"></div>
     </div>
     
