@@ -518,7 +518,25 @@
       this.bindButton('btn-target', this.targetMenu.bind(this));
       this.bindButton('btn-save', this.saveMenu.bind(this));
       this.bindButton('btn-load', this.loadMenu.bind(this));
-      
+      this.bindButton('btn-screenshot', this.screenshotMenu.bind(this));
+      this.bindButton('btn-electron-mode', this.electronModeMenu.bind(this));
+      this.bindButton('btn-periodic-table', this.periodicTableMenu.bind(this));
+      this.bindButton('btn-pubchem', this.pubchemMenu.bind(this));
+      this.bindButton('btn-music-player', this.musicMenu.bind(this));
+      this.bindButton('btn-audio-toggle', this.soundMenu.bind(this));
+      this.bindButton('btn-microphone', this.micMenu.bind(this));
+      this.bindButton('btn-multiplayer', this.multiplayerMenu.bind(this));
+      this.bindButton('env-btn', this.envMenu.bind(this));
+      this.bindButton('btn-stage-0', this.stageMenu.bind(this));
+      this.bindButton('btn-stage-1', this.stageMenu.bind(this));
+      this.bindButton('btn-stage-2', this.stageMenu.bind(this));
+      this.bindButton('btn-bot-reporter', this.botReporterMenu.bind(this));
+      this.bindButton('btn-bot-religious', this.botReligiousMenu.bind(this));
+      this.bindButton('btn-bot-homeless', this.botHomelessMenu.bind(this));
+      this.bindButton('btn-bot-lover', this.botLoverMenu.bind(this));
+      this.bindButton('btn-bots-all', this.botsAllMenu.bind(this));
+      this.bindButton('btn-bots-clear', this.botsAllMenu.bind(this));
+
       console.log('🖱️ Context Menus initialized!');
     },
     
@@ -691,6 +709,156 @@
         { icon: '📂', label: 'Quick Load', action: () => CHEMVENTUR.Game.load?.() },
         { icon: '📁', label: 'Load From File...', action: () => CHEMVENTUR.Game.loadFrom?.() },
         { icon: '☁️', label: 'Load from Cloud (coming)', action: null }
+      ]);
+    },
+
+    screenshotMenu(e) {
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '📸', label: 'Screenshot (PNG)', action: () => CHEMVENTUR.Game.screenshot?.() },
+        { icon: '🖼️', label: 'Copy to Clipboard', action: () => {
+          const c = document.getElementById('game-canvas');
+          if (c) c.toBlob(b => navigator.clipboard?.write?.([new ClipboardItem({'image/png': b})]));
+        }},
+        { icon: '🎥', label: 'Record GIF (coming)', action: null }
+      ]);
+    },
+
+    electronModeMenu(e) {
+      const MolSys = CHEMVENTUR.MolecularSystem;
+      if (!MolSys) return;
+      const modes = MolSys.ELECTRON_MODES || {};
+      const items = Object.entries(modes).map(([key, mode]) => ({
+        icon: mode.icon || '⚡',
+        label: mode.name || key,
+        action: () => { MolSys.electronMode = key; CHEMVENTUR.UI?.updateButtons?.(); },
+        active: MolSys.electronMode === key
+      }));
+      if (items.length === 0) {
+        items.push({ icon: '⚡', label: 'Cycle Mode', action: () => MolSys.cycleElectronMode?.() });
+      }
+      this.showMenu(e.clientX, e.clientY, items);
+    },
+
+    periodicTableMenu(e) {
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '⚛️', label: 'Open Full Table', action: () => CHEMVENTUR.UI?.openPeriodicTableFull?.() },
+        { icon: '🔍', label: 'Search Element', action: () => CHEMVENTUR.UI?.openPeriodicTableFull?.() },
+        { icon: '📊', label: 'Show Inventory Only', action: () => CHEMVENTUR.UI?.updateInventory?.() }
+      ]);
+    },
+
+    pubchemMenu(e) {
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '🔬', label: 'Search PubChem', action: () => CHEMVENTUR.UI?.openPubChemSearch?.() },
+        { icon: '💧', label: 'Spawn Water', action: () => CHEMVENTUR.MoleculeStructures?.spawn?.('water', CHEMVENTUR.Game.ship.x, CHEMVENTUR.Game.ship.y - 50) },
+        { icon: '🧪', label: 'Spawn Ethanol', action: () => CHEMVENTUR.MoleculeStructures?.spawn?.('ethanol', CHEMVENTUR.Game.ship.x, CHEMVENTUR.Game.ship.y - 50) }
+      ]);
+    },
+
+    musicMenu(e) {
+      const MP = CHEMVENTUR.MusicPlayer;
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '🎵', label: 'Open Music Player', action: () => { if (MP) { if (!MP.enabled) MP.init(); MP.toggleUI(); } } },
+        { icon: '📁', label: 'Load Audio File', action: () => document.getElementById('music-upload')?.click() },
+        { icon: '⏸', label: MP?.isPlaying ? 'Pause' : 'Resume', action: () => CHEMVENTUR.AudioSystem?.toggle?.() }
+      ]);
+    },
+
+    soundMenu(e) {
+      const Audio = CHEMVENTUR.Audio;
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '🔊', label: Audio?.enabled ? 'Sound: ON' : 'Sound: OFF', action: () => { if (Audio) Audio.enabled = !Audio.enabled; CHEMVENTUR.UI?.updateAudioDisplay?.(); }, active: Audio?.enabled },
+        { separator: true },
+        { icon: '🔈', label: 'Volume Low', action: () => { if (CHEMVENTUR.Config?.AUDIO) CHEMVENTUR.Config.AUDIO.MASTER_VOLUME = 0.03; } },
+        { icon: '🔉', label: 'Volume Medium', action: () => { if (CHEMVENTUR.Config?.AUDIO) CHEMVENTUR.Config.AUDIO.MASTER_VOLUME = 0.08; } },
+        { icon: '🔊', label: 'Volume High', action: () => { if (CHEMVENTUR.Config?.AUDIO) CHEMVENTUR.Config.AUDIO.MASTER_VOLUME = 0.15; } }
+      ]);
+    },
+
+    micMenu(e) {
+      const Mic = CHEMVENTUR.MicrophonePressure;
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '🎤', label: Mic?.active ? 'Mic: ON' : 'Mic: OFF', action: () => document.getElementById('btn-microphone')?.click(), active: Mic?.active },
+        { icon: '📊', label: 'Toggle Grid Waves', action: () => { CHEMVENTUR.PressureGrid?.toggle?.(); CHEMVENTUR.UI?.updateButtons?.(); } },
+        { icon: '💡', label: 'Sensitivity Info', action: () => CHEMVENTUR.UI?.showStatus?.('🎤 Louder voice = bigger waves!') }
+      ]);
+    },
+
+    multiplayerMenu(e) {
+      const MP = CHEMVENTUR.Multiplayer;
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '🌐', label: MP?.connected ? 'Disconnect' : 'Connect', action: () => document.getElementById('btn-multiplayer')?.click() },
+        { icon: '📝', label: 'Change Name', action: () => document.getElementById('player-name-input')?.focus() },
+        { icon: '👥', label: 'Player List', action: () => CHEMVENTUR.UI?.showStatus?.('Check player list in left panel') }
+      ]);
+    },
+
+    envMenu(e) {
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '😈', label: 'Open Environment Panel', action: () => CHEMVENTUR.UI?.toggleEnvWindow?.() },
+        { icon: '🌡️', label: 'Temperature Calc', action: () => { CHEMVENTUR.UI?.toggleEnvWindow?.(); CHEMVENTUR.EnvCalc?.openCalc?.('temperature'); } },
+        { icon: '⚡', label: 'Energy Calc', action: () => { CHEMVENTUR.UI?.toggleEnvWindow?.(); CHEMVENTUR.EnvCalc?.openCalc?.('energy'); } },
+        { icon: '💨', label: 'Pressure Calc', action: () => { CHEMVENTUR.UI?.toggleEnvWindow?.(); CHEMVENTUR.EnvCalc?.openCalc?.('pressure'); } }
+      ]);
+    },
+
+    stageMenu(e) {
+      const Game = CHEMVENTUR.Game;
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '🎻', label: 'Stage 0: Strings', action: () => { Game.changeStage(-Game.stage); CHEMVENTUR.UI?.updateStageButtons?.(); }, active: Game.stage === 0 },
+        { icon: '⚛️', label: 'Stage 1: Atoms', action: () => { Game.changeStage(1 - Game.stage); CHEMVENTUR.UI?.updateStageButtons?.(); }, active: Game.stage === 1 },
+        { icon: '🧬', label: 'Stage 2: Molecules', action: () => { Game.changeStage(2 - Game.stage); CHEMVENTUR.UI?.updateStageButtons?.(); }, active: Game.stage === 2 }
+      ]);
+    },
+
+    botReporterMenu(e) {
+      const Bots = CHEMVENTUR.Bots;
+      const count = Bots?.bots.filter(b => b.type === 'reporter').length || 0;
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '📰', label: 'Spawn Reporter (' + count + ' active)', action: () => { if (!Bots.enabled) Bots.init(); Bots.spawnReporter(); } },
+        { icon: '🗑️', label: 'Remove All Reporters', action: () => Bots?.removeByType('reporter') },
+        { icon: '📸', label: 'View Saved Screenshots', action: () => {
+          const keys = Object.keys(localStorage).filter(k => k.startsWith('reporter_screenshot_'));
+          CHEMVENTUR.UI?.showStatus('📸 ' + keys.length + ' screenshots in localStorage');
+        }}
+      ]);
+    },
+
+    botReligiousMenu(e) {
+      const Bots = CHEMVENTUR.Bots;
+      const count = Bots?.bots.filter(b => b.type === 'religious').length || 0;
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '⛪', label: 'Spawn Peace Bot (' + count + ' active)', action: () => { if (!Bots.enabled) Bots.init(); Bots.spawnReligious(); } },
+        { icon: '🗑️', label: 'Remove All Peace Bots', action: () => Bots?.removeByType('religious') }
+      ]);
+    },
+
+    botHomelessMenu(e) {
+      const Bots = CHEMVENTUR.Bots;
+      const bot = Bots?.bots.find(b => b.type === 'homeless');
+      const count = bot ? bot.collectedElectrons : 0;
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '🏠', label: 'Spawn Homeless Bot', action: () => { if (!Bots.enabled) Bots.init(); Bots.spawnHomeless(); } },
+        { icon: '⚡', label: 'Electrons collected: ' + count, action: null },
+        { icon: '🗑️', label: 'Remove All Homeless Bots', action: () => Bots?.removeByType('homeless') }
+      ]);
+    },
+
+    botLoverMenu(e) {
+      const Bots = CHEMVENTUR.Bots;
+      const count = Bots?.bots.filter(b => b.type === 'lover').length || 0;
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '💕', label: 'Spawn Lover Bot (' + count + ' active)', action: () => { if (!Bots.enabled) Bots.init(); Bots.spawnLover(); } },
+        { icon: '🗑️', label: 'Remove All Lover Bots', action: () => Bots?.removeByType('lover') }
+      ]);
+    },
+
+    botsAllMenu(e) {
+      const Bots = CHEMVENTUR.Bots;
+      this.showMenu(e.clientX, e.clientY, [
+        { icon: '🤖', label: 'Spawn All 4 Bots', action: () => Bots?.spawnAll() },
+        { icon: '🗑️', label: 'Remove All Bots', action: () => Bots?.removeAll() },
+        { icon: '📊', label: Bots?.bots.length + ' bot(s) active', action: null }
       ]);
     }
   };

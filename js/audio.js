@@ -129,6 +129,31 @@
       this.boop(800, 0.15, 'sine');
     },
     
+    // Play a musical note at a given frequency
+    playNote(frequency = 440, duration = 0.15, type = 'sine', volume = null) {
+      if (!this.enabled || !this.ctx) return;
+
+      try {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = type;
+        osc.frequency.value = frequency;
+
+        const vol = volume || Config.MASTER_VOLUME * 0.6;
+        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+      } catch (e) {
+        // Silently fail
+      }
+    },
+
     // Toggle audio
     toggle() {
       this.enabled = !this.enabled;

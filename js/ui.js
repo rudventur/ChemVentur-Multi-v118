@@ -703,27 +703,28 @@
         };
       }
       
-      // 🎤 v117 MICROPHONE BUTTON 🎤
+      // 🎤 v117 MICROPHONE BUTTON (now compact in audio row)
       const micBtn = document.getElementById('btn-microphone');
       if (micBtn) {
         micBtn.onclick = async () => {
           const Mic = CHEMVENTUR.MicrophonePressure;
           if (!Mic) return;
-          
+
           if (!Mic.permissionGranted) {
-            micBtn.textContent = '🎤 Requesting...';
+            micBtn.textContent = '...';
             micBtn.disabled = true;
-            
+
             const success = await Mic.requestPermission();
-            
+
             if (success) {
               Mic.start();
-              micBtn.textContent = '🎤 MIC ACTIVE!';
+              micBtn.textContent = '🎤';
               micBtn.classList.add('active');
+              micBtn.style.background = '#00ff41';
               micBtn.disabled = false;
-              document.getElementById('microphone-status').textContent = '✅ Speak to create waves!';
+              document.getElementById('microphone-status').textContent = 'Mic: ON';
               this.showStatus('🎤 Microphone active! Speak to see waves!');
-              
+
               // Make sure grid is on
               if (!CHEMVENTUR.PressureGrid.enabled) {
                 CHEMVENTUR.PressureGrid.toggle();
@@ -731,22 +732,24 @@
                 this.showStatus('🎤 Mic ON + Grid ON! Speak now!');
               }
             } else {
-              micBtn.textContent = '🎤 PERMISSION DENIED';
+              micBtn.textContent = '🎤';
               micBtn.disabled = false;
-              document.getElementById('microphone-status').textContent = '❌ Permission denied';
+              document.getElementById('microphone-status').textContent = 'Mic: DENIED';
               this.showStatus('❌ Microphone permission denied!');
             }
           } else {
             Mic.toggle();
             if (Mic.active) {
-              micBtn.textContent = '🎤 MIC ACTIVE!';
+              micBtn.textContent = '🎤';
               micBtn.classList.add('active');
-              document.getElementById('microphone-status').textContent = '✅ Speak to create waves!';
+              micBtn.style.background = '#00ff41';
+              document.getElementById('microphone-status').textContent = 'Mic: ON';
               this.showStatus('🎤 Microphone ON!');
             } else {
-              micBtn.textContent = '🎤 CLICK TO ENABLE MIC';
+              micBtn.textContent = '🎤';
               micBtn.classList.remove('active');
-              document.getElementById('microphone-status').textContent = 'Click to enable';
+              micBtn.style.background = 'linear-gradient(90deg,#ffff00,#ff8800)';
+              document.getElementById('microphone-status').textContent = 'Mic: OFF';
               this.showStatus('🎤 Microphone OFF');
             }
           }
@@ -764,6 +767,39 @@
             CHEMVENTUR.MusicPlayer.toggleUI();
           }
         };
+      }
+
+      // 🤖 v118 FUN BOTS BUTTONS
+      const Bots = CHEMVENTUR.Bots;
+      if (Bots) {
+        const updateBotStatus = () => {
+          const st = document.getElementById('bots-status');
+          if (st) st.textContent = Bots.bots.length > 0
+            ? Bots.bots.length + ' bot(s) active'
+            : 'Click to spawn bots!';
+        };
+        document.getElementById('btn-bot-reporter')?.addEventListener('click', () => {
+          if (!Bots.enabled) Bots.init();
+          Bots.spawnReporter(); updateBotStatus();
+        });
+        document.getElementById('btn-bot-religious')?.addEventListener('click', () => {
+          if (!Bots.enabled) Bots.init();
+          Bots.spawnReligious(); updateBotStatus();
+        });
+        document.getElementById('btn-bot-homeless')?.addEventListener('click', () => {
+          if (!Bots.enabled) Bots.init();
+          Bots.spawnHomeless(); updateBotStatus();
+        });
+        document.getElementById('btn-bot-lover')?.addEventListener('click', () => {
+          if (!Bots.enabled) Bots.init();
+          Bots.spawnLover(); updateBotStatus();
+        });
+        document.getElementById('btn-bots-all')?.addEventListener('click', () => {
+          Bots.spawnAll(); updateBotStatus();
+        });
+        document.getElementById('btn-bots-clear')?.addEventListener('click', () => {
+          Bots.removeAll(); updateBotStatus();
+        });
       }
     },
     

@@ -499,6 +499,16 @@
           height: this.height
         });
       }
+
+      // Update Fun Bots (v118)
+      if (CHEMVENTUR.Bots && CHEMVENTUR.Bots.enabled) {
+        CHEMVENTUR.Bots.update({
+          atoms: this.atoms,
+          ship: this.ship,
+          width: this.width,
+          height: this.height
+        });
+      }
       
       // ===== STAGE 0: STRING UNIVERSE! =====
       if (this.stage === 0 && StringSystem) {
@@ -1013,6 +1023,11 @@
         }
       }
       
+      // Draw Fun Bots (v118)
+      if (CHEMVENTUR.Bots?.enabled) {
+        CHEMVENTUR.Bots.draw(Renderer.ctx);
+      }
+
       // Draw all atoms
       this.atoms.forEach(atom => {
         if (atom) Renderer.drawAtom(atom);
