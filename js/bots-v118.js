@@ -1,6 +1,7 @@
 /* ============================================
    CHEMVENTUR v118 - FUN BOTS! 🤖
    Reporter, Religious, Homeless, Lover bots!
+   All run fully autonomously — zero human input!
    Built with love for Pumpkin 🎃💚
    ============================================ */
 
@@ -13,6 +14,7 @@
     updateInterval: 100, // 100ms tick
     messageQueue: [],     // on-screen bot messages
     MESSAGE_DURATION: 4000,
+    flashEffects: [],     // camera flash effects
 
     // ===== HEADLINES for Reporter =====
     HEADLINES: [
@@ -38,23 +40,99 @@
       "CULTURE: String theory band releases debut vibration album"
     ],
 
-    // ===== QUOTES for Religious bot =====
+    // ===== QUOTES for Religious bot — many traditions! =====
     QUOTES: [
-      { text: "Peace comes from within. Do not seek it without.", source: "Buddhism" },
-      { text: "Love thy neighbor as thyself.", source: "Christianity" },
-      { text: "The soul is neither born, nor does it die.", source: "Hinduism" },
-      { text: "Kindness is a mark of faith.", source: "Islam" },
-      { text: "What is hateful to you, do not do to others.", source: "Judaism" },
+      // Buddhism
+      { text: "Peace comes from within. Do not seek it without.", source: "Buddhism — Buddha" },
+      { text: "Do not dwell in the past, do not dream of the future, concentrate the mind on the present moment.", source: "Buddhism — Buddha" },
+      { text: "Three things cannot be long hidden: the sun, the moon, and the truth.", source: "Buddhism — Buddha" },
+      { text: "In the end, only three things matter: how much you loved, how gently you lived, and how gracefully you let go.", source: "Buddhism — Buddha" },
+      { text: "Holding onto anger is like drinking poison and expecting the other person to die.", source: "Buddhism — Buddha" },
+      { text: "You yourself, as much as anybody in the entire universe, deserve your love and affection.", source: "Buddhism — Buddha" },
+
+      // Christianity
+      { text: "Love thy neighbor as thyself.", source: "Christianity — Matthew 22:39" },
+      { text: "In the beginning was the Word, and the Word was with God.", source: "Christianity — John 1:1" },
+      { text: "God is love, and whoever abides in love abides in God.", source: "Christianity — 1 John 4:16" },
+      { text: "For where two or three gather in my name, there am I with them.", source: "Christianity — Matthew 18:20" },
+      { text: "Be still, and know that I am God.", source: "Christianity — Psalm 46:10" },
+      { text: "Blessed are the peacemakers, for they shall be called children of God.", source: "Christianity — Matthew 5:9" },
+
+      // Hinduism
+      { text: "The soul is neither born, nor does it die.", source: "Hinduism — Bhagavad Gita 2:20" },
+      { text: "Truth is one; sages call it by various names.", source: "Hinduism — Rig Veda 1.164.46" },
+      { text: "When meditation is mastered, the mind is unwavering like the flame of a candle in a windless place.", source: "Hinduism — Bhagavad Gita 6:19" },
+      { text: "You have the right to work, but never to the fruit of work.", source: "Hinduism — Bhagavad Gita 2:47" },
+      { text: "The Self is everywhere. Bright is the Self, indivisible, untouched by sin.", source: "Hinduism — Isha Upanishad" },
+      { text: "From the unreal lead me to the real, from darkness lead me to light.", source: "Hinduism — Brihadaranyaka Upanishad" },
+
+      // Islam
+      { text: "Kindness is a mark of faith, and whoever has not kindness has not faith.", source: "Islam — Prophet Muhammad (Hadith)" },
+      { text: "The best among you are those who have the best character.", source: "Islam — Prophet Muhammad (Hadith)" },
+      { text: "Speak good or remain silent.", source: "Islam — Prophet Muhammad (Hadith)" },
+      { text: "Verily, with hardship comes ease.", source: "Islam — Quran 94:6" },
+      { text: "Do not lose hope, nor be sad.", source: "Islam — Quran 3:139" },
+      { text: "God does not burden a soul beyond that it can bear.", source: "Islam — Quran 2:286" },
+
+      // Judaism
+      { text: "What is hateful to you, do not do to others. That is the whole Torah.", source: "Judaism — Rabbi Hillel" },
+      { text: "It is not your duty to finish the work, but neither are you free to neglect it.", source: "Judaism — Pirkei Avot 2:16" },
+      { text: "Who is wise? One who learns from every person.", source: "Judaism — Pirkei Avot 4:1" },
+      { text: "The world stands on three things: Torah, worship, and acts of loving kindness.", source: "Judaism — Pirkei Avot 1:2" },
+      { text: "Whoever saves a single life, it is as if they saved the entire world.", source: "Judaism — Talmud, Sanhedrin 37a" },
+
+      // Sikhism
+      { text: "Even Kings and emperors with heaps of wealth and vast dominion cannot compare with an ant filled with the love of God.", source: "Sikhism — Guru Nanak" },
+      { text: "Before becoming a Muslim, a Sikh, or a Hindu, let us first become human.", source: "Sikhism — Guru Nanak" },
+      { text: "There is but One God, whose name is True, the Creator.", source: "Sikhism — Guru Granth Sahib" },
+      { text: "Those who have loved are those that have found God.", source: "Sikhism — Guru Nanak" },
+
+      // Taoism
+      { text: "The Way that can be told is not the eternal Way.", source: "Taoism — Lao Tzu, Tao Te Ching" },
+      { text: "Nature does not hurry, yet everything is accomplished.", source: "Taoism — Lao Tzu" },
+      { text: "A journey of a thousand miles begins with a single step.", source: "Taoism — Lao Tzu" },
+      { text: "When I let go of what I am, I become what I might be.", source: "Taoism — Lao Tzu" },
+      { text: "The soft overcomes the hard; the gentle overcomes the rigid.", source: "Taoism — Lao Tzu" },
+
+      // Sufism
+      { text: "The wound is the place where the Light enters you.", source: "Sufism — Rumi" },
+      { text: "Before you speak, let your words pass three gates: Is it true? Is it necessary? Is it kind?", source: "Sufism — Rumi" },
+      { text: "Let yourself be silently drawn by the strange pull of what you really love.", source: "Sufism — Rumi" },
+      { text: "What you seek is seeking you.", source: "Sufism — Rumi" },
+      { text: "Yesterday I was clever, so I wanted to change the world. Today I am wise, so I am changing myself.", source: "Sufism — Rumi" },
+
+      // Zoroastrianism
+      { text: "Good thoughts, good words, good deeds.", source: "Zoroastrianism — Avesta" },
+      { text: "Happiness belongs to the one who brings happiness to others.", source: "Zoroastrianism — Zarathustra" },
+
+      // Jainism
+      { text: "Non-violence is the highest religion.", source: "Jainism — Mahavira" },
+      { text: "Do not injure, abuse, oppress, enslave, insult, or torment any creature or living being.", source: "Jainism — Mahavira" },
+      { text: "The soul comes alone and goes alone.", source: "Jainism — Mahavira" },
+
+      // Baha'i
+      { text: "The earth is but one country, and mankind its citizens.", source: "Baha'i — Baha'u'llah" },
+      { text: "So powerful is the light of unity that it can illuminate the whole earth.", source: "Baha'i — Baha'u'llah" },
+
+      // Confucianism
+      { text: "It does not matter how slowly you go as long as you do not stop.", source: "Confucianism — Confucius" },
+      { text: "What you do not wish for yourself, do not do to others.", source: "Confucianism — Confucius, Analects 15:24" },
+      { text: "The man who moves a mountain begins by carrying away small stones.", source: "Confucianism — Confucius" },
+
+      // Shintoism
+      { text: "Even the wishes of a small ant reach to heaven.", source: "Shintoism — Japanese Proverb" },
+      { text: "Leave the problems of God to God and weather to weather.", source: "Shintoism — Japanese Proverb" },
+
+      // Native American Spirituality
+      { text: "We do not inherit the earth from our ancestors; we borrow it from our children.", source: "Native American Proverb" },
+      { text: "When you were born, you cried and the world rejoiced. Live your life so when you die, the world cries and you rejoice.", source: "Native American — Cherokee Proverb" },
+
+      // General wisdom
       { text: "An eye for an eye makes the whole world blind.", source: "Mahatma Gandhi" },
-      { text: "The Way that can be told is not the eternal Way.", source: "Taoism" },
-      { text: "Happiness is not something readymade. It comes from your actions.", source: "Dalai Lama" },
+      { text: "Happiness is not something readymade. It comes from your own actions.", source: "Dalai Lama" },
       { text: "There is no wealth like knowledge, no poverty like ignorance.", source: "Ali ibn Abi Talib" },
-      { text: "In the beginning was the Word.", source: "Christianity" },
-      { text: "Truth is one; sages call it by various names.", source: "Hinduism (Rig Veda)" },
-      { text: "Do not dwell in the past, do not dream of the future.", source: "Buddhism" },
-      { text: "God is love, and whoever abides in love abides in God.", source: "Christianity" },
-      { text: "The wound is the place where the Light enters you.", source: "Rumi (Sufism)" },
-      { text: "Before you speak, let your words pass through three gates: Is it true? Is it necessary? Is it kind?", source: "Sufism" }
+      { text: "Darkness cannot drive out darkness; only light can do that.", source: "Martin Luther King Jr." },
+      { text: "In a gentle way, you can shake the world.", source: "Mahatma Gandhi" }
     ],
 
     // ===== INIT =====
@@ -62,6 +140,7 @@
       console.log('🤖 Initializing Fun Bots...');
       this.bots = [];
       this.messageQueue = [];
+      this.flashEffects = [];
       this.enabled = true;
       console.log('✅ Fun Bots system ready!');
     },
@@ -69,8 +148,9 @@
     // ===== SPAWN INDIVIDUAL BOTS =====
     spawnReporter() {
       const game = CHEMVENTUR.Game;
+      const now = Date.now();
       const bot = {
-        id: 'reporter_' + Date.now(),
+        id: 'reporter_' + now,
         type: 'reporter',
         emoji: '📰',
         name: 'Reporter Bot',
@@ -80,7 +160,9 @@
         vx: (Math.random() - 0.5) * 3,
         vy: (Math.random() - 0.5) * 3,
         size: 14,
-        lastHeadline: 0,
+        spawnTime: now,
+        firstScreenshotDone: false,
+        lastHeadline: now, // will fire first headline after interval
         headlineInterval: 60000, // 1 minute
         headlineIndex: 0,
         lastScreenshot: 0
@@ -105,8 +187,8 @@
         size: 14,
         lastQuote: 0,
         quoteInterval: 15000, // every 15 seconds
-        quoteIndex: 0,
-        phase: Math.random() * Math.PI * 2, // for gentle floating
+        quoteIndex: Math.floor(Math.random() * 60), // start at random quote
+        phase: Math.random() * Math.PI * 2,
         glowPhase: 0
       };
       this.bots.push(bot);
@@ -172,6 +254,7 @@
     removeAll() {
       this.bots = [];
       this.messageQueue = [];
+      this.flashEffects = [];
       CHEMVENTUR.UI?.showStatus('🤖 All bots removed');
     },
 
@@ -207,8 +290,9 @@
         if (bot.y > height - 20) { bot.y = height - 20; bot.vy = -Math.abs(bot.vy) * 0.8; }
       }
 
-      // Expire old messages
+      // Expire old messages and flash effects
       this.messageQueue = this.messageQueue.filter(m => now - m.time < this.MESSAGE_DURATION);
+      this.flashEffects = this.flashEffects.filter(f => now - f.time < 600);
     },
 
     // ===== REPORTER BEHAVIOR =====
@@ -225,6 +309,13 @@
       bot.vx *= 0.99;
       bot.vy *= 0.99;
 
+      // First screenshot 5 seconds after spawning
+      if (!bot.firstScreenshotDone && now - bot.spawnTime >= 5000) {
+        bot.firstScreenshotDone = true;
+        this.addMessage(bot, '📸 First snapshot of the universe!');
+        this.doFlashAndScreenshot(bot);
+      }
+
       // Pop headline every minute
       if (now - bot.lastHeadline > bot.headlineInterval) {
         bot.lastHeadline = now;
@@ -232,9 +323,20 @@
         bot.headlineIndex++;
         this.addMessage(bot, '📰 ' + headline);
 
-        // Take screenshot to localStorage
-        this.takeScreenshot(bot);
+        // Take screenshot with flash
+        this.doFlashAndScreenshot(bot);
       }
+    },
+
+    doFlashAndScreenshot(bot) {
+      // Add flash effect at bot position
+      this.flashEffects.push({
+        x: bot.x,
+        y: bot.y,
+        time: Date.now()
+      });
+      this.addMessage(bot, '📸 *click* Screenshot saved!');
+      this.takeScreenshot(bot);
     },
 
     takeScreenshot(bot) {
@@ -363,12 +465,10 @@
 
         // Bot-specific effects
         if (bot.type === 'religious') {
-          // Peaceful glow
           const glow = 8 + Math.sin(bot.glowPhase) * 4;
           ctx.shadowBlur = glow;
           ctx.shadowColor = '#ffccff';
         } else if (bot.type === 'lover') {
-          // Heart glow
           ctx.shadowBlur = 10 + Math.sin(bot.heartPhase) * 5;
           ctx.shadowColor = '#ff66aa';
         } else if (bot.type === 'reporter') {
@@ -401,7 +501,7 @@
         if (bot.type === 'homeless' && bot.collectedElectrons > 0) {
           ctx.font = '8px Courier New';
           ctx.fillStyle = '#00ffff';
-          ctx.fillText('e⁻: ' + bot.collectedElectrons, bot.x, bot.y + bot.size + 20);
+          ctx.fillText('e\u207B: ' + bot.collectedElectrons, bot.x, bot.y + bot.size + 20);
         }
 
         // Lover: draw little hearts around orbit
@@ -413,7 +513,7 @@
             const a = bot.orbitAngle + i * (Math.PI * 2 / 3);
             const hx = bot.x + Math.cos(a) * 22;
             const hy = bot.y + Math.sin(a) * 22;
-            ctx.fillText('💕', hx - 5, hy);
+            ctx.fillText('\u{1F495}', hx - 5, hy);
           }
           ctx.globalAlpha = 1;
         }
@@ -421,11 +521,31 @@
         ctx.restore();
       }
 
+      // Draw camera flash effects
+      for (const flash of this.flashEffects) {
+        const age = now - flash.time;
+        const alpha = Math.max(0, 1 - age / 600);
+        const radius = 40 + age * 0.3;
+
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.7;
+        const grad = ctx.createRadialGradient(flash.x, flash.y, 0, flash.x, flash.y, radius);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.3, '#ffffaa');
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(flash.x, flash.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.restore();
+      }
+
       // Draw messages
       for (const msg of this.messageQueue) {
         const age = now - msg.time;
         const alpha = Math.max(0, 1 - age / this.MESSAGE_DURATION);
-        const yOffset = -(age / this.MESSAGE_DURATION) * 40; // float upward
+        const yOffset = -(age / this.MESSAGE_DURATION) * 40;
 
         ctx.save();
         ctx.globalAlpha = alpha;
