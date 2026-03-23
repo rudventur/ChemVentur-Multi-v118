@@ -648,57 +648,88 @@
         document.getElementById('speed-value').textContent = Config.TIME_NAMES[this.value];
       };
       
-      // 🎃 v117 MULTIPLAYER BUTTON 💚
+      // 🎃 v118 MULTIPLAYER ROOM BUTTONS 💚
       const multiBtn = document.getElementById('btn-multiplayer');
+      const joinBtn = document.getElementById('btn-join-room');
+      const self = this;
+
+      const onConnected = async (Multi) => {
+        multiBtn.textContent = '❌ DISCONNECT';
+        multiBtn.classList.add('active');
+        multiBtn.disabled = false;
+        self.showStatus('🏠 Room ' + Multi.roomId + ' connected!');
+
+        // 🤖💬 v118: Initialize AI Players and Chat!
+        if (CHEMVENTUR.AIPlayers) {
+          await CHEMVENTUR.AIPlayers.init();
+          self.showStatus('🤖 AI Players spawning...', 2000);
+        }
+        if (CHEMVENTUR.Chat) {
+          await CHEMVENTUR.Chat.init();
+          self.showStatus('💬 Chat ready!', 2000);
+        }
+      };
+
+      const onDisconnected = (Multi) => {
+        if (CHEMVENTUR.AIPlayers) CHEMVENTUR.AIPlayers.cleanup?.();
+        if (CHEMVENTUR.Chat) CHEMVENTUR.Chat.cleanup?.();
+        Multi.disconnect();
+        multiBtn.textContent = '🌐 CREATE ROOM';
+        multiBtn.classList.remove('active');
+        multiBtn.disabled = false;
+        document.getElementById('multiplayer-status').textContent = 'Create or join a room!';
+        document.getElementById('player-list-v117').innerHTML = '';
+        self.showStatus('👋 Disconnected from multiplayer');
+      };
+
       if (multiBtn) {
         multiBtn.onclick = async () => {
           const Multi = CHEMVENTUR.Multiplayer;
           if (!Multi) return;
-          
+
           if (!Multi.connected) {
-            multiBtn.textContent = '🌐 Connecting...';
+            multiBtn.textContent = '🌐 Creating room...';
             multiBtn.disabled = true;
-            
             const nameInput = document.getElementById('player-name-input');
-            const success = await Multi.connect(nameInput.value || 'Pumpkin');
-            
+            const success = await Multi.createRoom(nameInput.value || 'Pumpkin');
             if (success) {
-              multiBtn.textContent = '✅ CONNECTED!';
-              multiBtn.classList.add('active');
-              this.showStatus('🎃💚 Multiplayer connected! 💚🎃');
-              document.getElementById('multiplayer-status').textContent = '✅ Connected! ' + Multi.getPlayerCount() + ' players online';
-              
-              // 🤖💬 v118: Initialize AI Players and Chat! 💬🤖
-              if (CHEMVENTUR.AIPlayers) {
-                await CHEMVENTUR.AIPlayers.init();
-                this.showStatus('🤖 AI Players spawning...', 2000);
-              }
-              if (CHEMVENTUR.Chat) {
-                await CHEMVENTUR.Chat.init();
-                this.showStatus('💬 Chat ready!', 2000);
-              }
+              await onConnected(Multi);
             } else {
               multiBtn.textContent = '❌ FAILED - Try Again';
               multiBtn.disabled = false;
-              this.showStatus('❌ Connection failed! Check Firebase rules!');
+              self.showStatus('❌ Connection failed!');
               document.getElementById('multiplayer-status').textContent = '❌ Connection failed';
             }
           } else {
-            // 🤖💬 v118: Cleanup AI and Chat before disconnect
-            if (CHEMVENTUR.AIPlayers) {
-              CHEMVENTUR.AIPlayers.cleanup();
-            }
-            if (CHEMVENTUR.Chat) {
-              CHEMVENTUR.Chat.cleanup();
-            }
-            
-            Multi.disconnect();
-            multiBtn.textContent = '🌐 CONNECT TO MULTIPLAYER';
-            multiBtn.classList.remove('active');
-            multiBtn.disabled = false;
-            document.getElementById('multiplayer-status').textContent = 'Disconnected';
-            document.getElementById('player-list-v117').innerHTML = '';
-            this.showStatus('👋 Disconnected from multiplayer');
+            onDisconnected(Multi);
+          }
+        };
+      }
+
+      if (joinBtn) {
+        joinBtn.onclick = async () => {
+          const Multi = CHEMVENTUR.Multiplayer;
+          if (!Multi) return;
+          if (Multi.connected) {
+            self.showStatus('Already connected! Disconnect first.');
+            return;
+          }
+          const codeInput = document.getElementById('room-code-input');
+          const code = (codeInput?.value || '').trim().toUpperCase();
+          if (code.length < 4) {
+            self.showStatus('Enter a valid room code!');
+            return;
+          }
+          joinBtn.textContent = '...';
+          joinBtn.disabled = true;
+          const nameInput = document.getElementById('player-name-input');
+          const success = await Multi.joinRoom(code, nameInput.value || 'Pumpkin');
+          joinBtn.textContent = 'JOIN';
+          joinBtn.disabled = false;
+          if (success) {
+            await onConnected(Multi);
+          } else {
+            self.showStatus('❌ Failed to join room ' + code);
           }
         };
       }
