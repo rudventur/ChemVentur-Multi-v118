@@ -530,6 +530,7 @@
       this.bindButton('btn-stage-0', this.stageMenu.bind(this));
       this.bindButton('btn-stage-1', this.stageMenu.bind(this));
       this.bindButton('btn-stage-2', this.stageMenu.bind(this));
+      this.bindButton('btn-stage-3', this.stageMenu.bind(this));
       this.bindButton('btn-bot-reporter', this.botReporterMenu.bind(this));
       this.bindButton('btn-bot-religious', this.botReligiousMenu.bind(this));
       this.bindButton('btn-bot-homeless', this.botHomelessMenu.bind(this));
@@ -805,9 +806,10 @@
     stageMenu(e) {
       const Game = CHEMVENTUR.Game;
       this.showMenu(e.clientX, e.clientY, [
-        { icon: '🎻', label: 'Stage 0: Strings', action: () => { Game.changeStage(-Game.stage); CHEMVENTUR.UI?.updateStageButtons?.(); }, active: Game.stage === 0 },
-        { icon: '⚛️', label: 'Stage 1: Atoms', action: () => { Game.changeStage(1 - Game.stage); CHEMVENTUR.UI?.updateStageButtons?.(); }, active: Game.stage === 1 },
-        { icon: '🧬', label: 'Stage 2: Molecules', action: () => { Game.changeStage(2 - Game.stage); CHEMVENTUR.UI?.updateStageButtons?.(); }, active: Game.stage === 2 }
+        { icon: '🎻', label: 'Stage 0: Strings',   action: () => { Game.changeStage(-Game.stage);     CHEMVENTUR.UI?.updateStageButtons?.(); }, active: Game.stage === 0 },
+        { icon: '⚛️', label: 'Stage 1: Atoms',     action: () => { Game.changeStage(1 - Game.stage); CHEMVENTUR.UI?.updateStageButtons?.(); }, active: Game.stage === 1 },
+        { icon: '🧬', label: 'Stage 2: Molecules', action: () => { Game.changeStage(2 - Game.stage); CHEMVENTUR.UI?.updateStageButtons?.(); }, active: Game.stage === 2 },
+        { icon: '🦠', label: 'Stage 3: Micro-World', action: () => { Game.changeStage(3 - Game.stage); CHEMVENTUR.UI?.updateStageButtons?.(); }, active: Game.stage === 3 }
       ]);
     },
 

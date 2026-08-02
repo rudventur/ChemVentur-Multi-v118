@@ -100,6 +100,11 @@ CHEMVENTUR.Config = {
       'out2': 0.25,
       'out3': 0.125,
       'out4': 0.0625
+    },
+    3: { // Micro-World
+      'zoomed.in': 3.0,
+      'normal': 1.0,
+      'zoomed.out': 0.4
     }
   },
   

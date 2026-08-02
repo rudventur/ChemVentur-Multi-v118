@@ -312,7 +312,7 @@
     updateStageButtons() {
       const game = CHEMVENTUR.Game;
       // Update button highlights
-      for (let i = 0; i <= 2; i++) {
+      for (let i = 0; i <= 3; i++) {
         const btn = document.getElementById(`btn-stage-${i}`);
         if (btn) {
           btn.classList.toggle('active', game.stage === i);
@@ -606,7 +606,19 @@
           this.showStatus('🧬 Stage 2: Molecular!');
         }
       };
-      
+
+      const btnStage3 = document.getElementById('btn-stage-3');
+      if (btnStage3) {
+        btnStage3.onclick = () => {
+          const diff = 3 - game.stage;
+          if (diff !== 0) {
+            game.changeStage(diff);
+            this.updateStageButtons();
+            this.showStatus('🦠 Stage 3: Micro-World!');
+          }
+        };
+      }
+
       // GRAVITY - Left click cycle, Right click options
       const gravBtn = document.getElementById('btn-gravity');
       gravBtn.onclick = () => { game.gravityMode = (game.gravityMode + 1) % 4; this.updateButtons(); };

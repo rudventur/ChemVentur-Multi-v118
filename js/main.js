@@ -30,7 +30,7 @@
   const Audio = CHEMVENTUR.Audio;
   const UI = CHEMVENTUR.UI;
   
-  let AudioSystem, SoundPhysics, MolecularSystem, StringSystem;
+  let AudioSystem, SoundPhysics, MolecularSystem, StringSystem, OrganismSystem;
   
   CHEMVENTUR.Game = {
     canvas: null, width: 0, height: 0,
@@ -46,9 +46,10 @@
     
     // Stage descriptions
     STAGES: {
-      0: { name: 'String Universe', emoji: '🎻', gridScale: 2, description: 'Build from vibrating strings!' },
-      1: { name: 'Subatomic', emoji: '⚛️', gridScale: 1, description: 'Atoms, bonds, reactions' },
-      2: { name: 'Molecular', emoji: '🧬', gridScale: 0.5, description: 'RDKit + PubChem 3D' }
+      0: { name: 'String Universe', emoji: '🎻', gridScale: 2,    description: 'Build from vibrating strings!' },
+      1: { name: 'Subatomic',       emoji: '⚛️', gridScale: 1,    description: 'Atoms, bonds, reactions' },
+      2: { name: 'Molecular',       emoji: '🧬', gridScale: 0.5,  description: 'RDKit + PubChem 3D' },
+      3: { name: 'Micro-World',     emoji: '🦠', gridScale: 0.25, description: 'Bacteria, viruses, crystals & sand' }
     },
     
     // Zoom descriptions within stages
@@ -84,6 +85,7 @@
       SoundPhysics = CHEMVENTUR.SoundPhysics;
       MolecularSystem = CHEMVENTUR.MolecularSystem;
       StringSystem = CHEMVENTUR.StringSystem;
+      OrganismSystem = CHEMVENTUR.OrganismSystem;
       
       this.canvas = document.getElementById('game-canvas');
       console.log('Canvas element:', this.canvas);
@@ -260,14 +262,37 @@
         // STAGE 0: Fire strings!
         if (this.stage === 0 && StringSystem) {
           const result = StringSystem.fireString(
-            this.ship.x, this.ship.y, 
-            GunSystem.currentGun, 
+            this.ship.x, this.ship.y,
+            GunSystem.currentGun,
             GunSystem.aimAngle
           );
           if (result) {
             Audio?.shoot();
             if (result.type === 'shotgun') UI.showStatus(`🎻 ${result.count} strings!`);
             else if (result.type === 'crossed') UI.showStatus('⏳ Time strings!');
+          }
+        }
+        // STAGE 3: Micro-world guns
+        else if (this.stage === 3 && OrganismSystem) {
+          const result = OrganismSystem.fire(
+            this.ship.x, this.ship.y,
+            GunSystem.currentGun,
+            GunSystem.aimAngle
+          );
+          if (result) {
+            Audio?.shoot();
+            const msgs = {
+              nutrient:   '🍀 Nutrients!',
+              antibiotic: '💊 Antibiotic!',
+              antiviral:  '🛡️ Antiviral!',
+              crystal:    '💎 Crystal seed!',
+              phage:      '🦠 Bacteriophage!',
+              sand:       '🏖️ Sand grain!',
+              uv:         '☀️ UV burst!',
+              growth:     '🌱 Growth hormone!',
+              bacterium:  '🦠 Spawned bacterium!'
+            };
+            if (msgs[result.type]) UI.showStatus(msgs[result.type]);
           }
         }
         // STAGE 1 & 2: Normal gun behavior
@@ -298,7 +323,7 @@
     // SHIFT + Mouse Wheel = Change stage!
     changeStage(delta) {
       const oldStage = this.stage;
-      this.stage = Math.max(0, Math.min(2, this.stage + delta));
+      this.stage = Math.max(0, Math.min(3, this.stage + delta));
       
       if (this.stage !== oldStage) {
         this.onStageChange(oldStage, this.stage);
@@ -329,7 +354,18 @@
         StringSystem.clear();
         UI?.showStatus('🎻 Welcome to the String Universe!', 3000);
       }
-      
+
+      // Enter Stage 3: initialise the micro-world culture
+      if (to === 3 && OrganismSystem) {
+        OrganismSystem.initCulture(this.width, this.height);
+        UI?.showStatus('🦠 Welcome to the Micro-World!', 3000);
+      }
+
+      // Leave Stage 3: clear the culture
+      if (from === 3 && OrganismSystem) {
+        OrganismSystem.clear();
+      }
+
       // Animate in-betweener
       this.playStageTransition(from, to);
       
@@ -550,7 +586,16 @@
         UI.updateAudioDisplay();
         return; // Skip the rest of update for Stage 0
       }
-      
+
+      // ===== STAGE 3: MICRO-WORLD =====
+      if (this.stage === 3 && OrganismSystem) {
+        OrganismSystem.update(this.width, this.height, ts);
+        this.updateShipPhysics(ts, zones);
+        UI.updateStats();
+        UI.updateAudioDisplay();
+        return;
+      }
+
       // ===== STAGE 1 & 2: PARTICLE PHYSICS =====
       
       // RAIN SYSTEM
@@ -948,7 +993,17 @@
         if (AudioSystem?.isPlaying) this.drawAudioVisualizer();
         return;
       }
-      
+
+      // ===== STAGE 3: MICRO-WORLD RENDERING =====
+      if (this.stage === 3 && OrganismSystem) {
+        this.drawMicroWorldBackground();
+        OrganismSystem.draw(Renderer.ctx);
+        Renderer.drawShip(this.ship.x, this.ship.y, GunSystem.aimAngle, this.isAiming);
+        this.drawStage3HUD();
+        if (AudioSystem?.isPlaying) this.drawAudioVisualizer();
+        return;
+      }
+
       // ===== STAGE 1 & 2: REGULAR RENDERING =====
       if (SoundPhysics?.enabled) SoundPhysics.draw(Renderer.ctx, this.width, this.height);
       PressureGrid.draw(Renderer.ctx, this.width, this.height);
@@ -1206,7 +1261,7 @@
         ctx.strokeStyle = '#ffff00';
         ctx.lineWidth = 3;
         ctx.strokeRect(this.width/2 - 150, this.height/2 - 40, 300, 80);
-        
+
         ctx.fillStyle = '#ffff00';
         ctx.font = 'bold 24px monospace';
         ctx.textAlign = 'center';
@@ -1216,6 +1271,107 @@
         ctx.fillText('THE DREAM SINCE BIRTH!', this.width/2, this.height/2 + 25);
         ctx.textAlign = 'left';
       }
+    },
+
+    // ===== STAGE 3 SPECIAL RENDERING =====
+    drawMicroWorldBackground() {
+      const ctx  = Renderer.ctx;
+      const time = Date.now() * 0.0005;
+
+      // Microscope-slide tint: very pale blue-green
+      ctx.fillStyle = '#020d0a';
+      ctx.fillRect(0, 0, this.width, this.height);
+
+      // Subtle cell-culture grid (Petri dish look)
+      ctx.strokeStyle = 'rgba(0, 180, 100, 0.06)';
+      ctx.lineWidth   = 1;
+      const gs = 50;
+      for (let x = 0; x < this.width; x += gs) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, this.height); ctx.stroke();
+      }
+      for (let y = 0; y < this.height; y += gs) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(this.width, y); ctx.stroke();
+      }
+
+      // Circular vignette (microscope field-of-view)
+      const cx  = this.width / 2;
+      const cy  = this.height / 2;
+      const rad = Math.max(this.width, this.height) * 0.62;
+      const vig = ctx.createRadialGradient(cx, cy, rad * 0.55, cx, cy, rad);
+      vig.addColorStop(0, 'rgba(0,0,0,0)');
+      vig.addColorStop(1, 'rgba(0,0,0,0.75)');
+      ctx.fillStyle = vig;
+      ctx.fillRect(0, 0, this.width, this.height);
+
+      // Floating dust/debris (out-of-focus particles)
+      ctx.fillStyle = 'rgba(100,180,120,0.08)';
+      for (let i = 0; i < 30; i++) {
+        const sx = (i * 197.3 + Math.sin(time + i) * 20) % this.width;
+        const sy = (i * 113.7 + Math.cos(time * 0.7 + i) * 15) % this.height;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 1 + Math.sin(time * 2 + i) * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    },
+
+    drawStage3HUD() {
+      const ctx   = Renderer.ctx;
+      const stats = OrganismSystem?.getStats() || {};
+
+      // HUD panel
+      ctx.fillStyle   = 'rgba(0, 20, 10, 0.88)';
+      ctx.fillRect(10, 10, 240, 190);
+      ctx.strokeStyle = '#00ff88';
+      ctx.lineWidth   = 2;
+      ctx.strokeRect(10, 10, 240, 190);
+
+      ctx.fillStyle = '#00ff88';
+      ctx.font      = 'bold 13px monospace';
+      ctx.fillText('🦠 MICRO-WORLD', 20, 30);
+
+      ctx.font      = '11px monospace';
+      let y = 50;
+
+      ctx.fillStyle = '#88ff44';
+      ctx.fillText(`Bacteria:   ${stats.bacteria  || 0}`, 20, y); y += 16;
+      ctx.fillStyle = '#ff4444';
+      ctx.fillText(`Viruses:    ${stats.viruses   || 0}`, 20, y); y += 16;
+      ctx.fillStyle = '#aaddff';
+      ctx.fillText(`Crystals:   ${stats.crystals  || 0}`, 20, y); y += 16;
+      ctx.fillStyle = '#ddaa66';
+      ctx.fillText(`Sand grains: ${stats.sandGrains || 0}`, 20, y); y += 20;
+
+      // Nutrient bar
+      ctx.fillStyle = '#aaaaaa';
+      ctx.fillText('Nutrients:', 20, y); y += 14;
+      const nw = 200;
+      const nf = (stats.nutrientLevel || 0) / 100;
+      ctx.fillStyle   = '#333';
+      ctx.fillRect(20, y, nw, 8);
+      const ng = ctx.createLinearGradient(20, y, 20 + nw * nf, y);
+      ng.addColorStop(0, '#004400');
+      ng.addColorStop(1, '#88ff44');
+      ctx.fillStyle   = ng;
+      ctx.fillRect(20, y, nw * nf, 8);
+      ctx.strokeStyle = '#00ff88';
+      ctx.lineWidth   = 1;
+      ctx.strokeRect(20, y, nw, 8);
+      ctx.fillStyle   = '#fff';
+      ctx.font        = '8px monospace';
+      ctx.textAlign   = 'center';
+      ctx.fillText(`${stats.nutrientLevel || 0}%`, 20 + nw / 2, y + 7);
+      ctx.textAlign   = 'left';
+      y += 22;
+
+      ctx.font = '9px monospace';
+      ctx.fillStyle = '#aaaaaa';
+      ctx.fillText(`Temp: ${stats.temperature || 37}°C`, 20, y); y += 13;
+      ctx.fillText(`Age: ${Math.round((stats.cultureAge || 0) / 60)}s`, 20, y); y += 13;
+
+      ctx.fillStyle = '#555';
+      ctx.fillText('1:nutrient 2:antibiotic 3:antiviral', 20, y); y += 11;
+      ctx.fillText('4:crystal  5:phage      6:sand', 20, y); y += 11;
+      ctx.fillText('7:UV burst 8:growth hormone', 20, y);
     }
   };
   
