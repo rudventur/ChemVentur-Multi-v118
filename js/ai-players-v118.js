@@ -121,9 +121,13 @@
         ref: null
       };
       
-      // Add to Firebase as a player
+      // Add to Firebase as a player (scoped to the current room)
       try {
-        const playersRef = CHEMVENTUR.Multiplayer.db.ref('players');
+        const playersRef = CHEMVENTUR.Multiplayer.playersRef;
+        if (!playersRef) {
+          console.error('No room players ref available — cannot spawn bot');
+          return;
+        }
         bot.ref = playersRef.child(bot.id);
         
         await bot.ref.set({
