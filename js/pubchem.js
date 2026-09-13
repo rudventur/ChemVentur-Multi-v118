@@ -326,6 +326,12 @@
     if (panel) {
       panel.classList.add('visible');
       document.getElementById('pubchem-search').focus();
+
+      const stats = document.getElementById('pubchem-stats');
+      if (stats) {
+        stats.innerHTML = `📦 Local: ${CHEMVENTUR.PubChem.getCount()} compounds | 🧪 SMILES: any molecule via RDKit | 🌐 API: 100M+ compounds<br>` +
+          `<span style="color:#00ff41;">★ Real 2D structures with bonds!</span>`;
+      }
     }
   };
   
@@ -379,14 +385,14 @@
     `;
   };
   
-  CHEMVENTUR.UI.spawnPubChemCompound = function(key) {
+  CHEMVENTUR.UI.spawnPubChemCompound = async function(key) {
     const compound = CHEMVENTUR.PubChem.db[key];
     if (!compound) return;
-    
+
     const game = CHEMVENTUR.Game;
     const structures = CHEMVENTUR.MoleculeStructures;
-    
-    // Try to spawn as REAL structure with bonds!
+
+    // 1) Curated hand-authored structure (exact known geometry)
     if (structures && structures[key]) {
       const result = structures.spawn(key, game.ship.x, game.ship.y - 50);
       if (result) {
@@ -396,14 +402,26 @@
         return;
       }
     }
-    
-    // Fallback: spawn as single particle (old way)
+
+    // 2) No curated geometry, but we have a SMILES — parse it with RDKit
+    if (compound.smiles && CHEMVENTUR.RDKit) {
+      this.showStatus('🧪 Parsing SMILES with RDKit...');
+      const result = await CHEMVENTUR.RDKit.spawnFromSmiles(compound.smiles, game.ship.x, game.ship.y - 50);
+      if (result) {
+        this.showStatus(`🧪 Spawned ${compound.name} from SMILES (${result.atoms.length} atoms bonded!)`);
+        this.closePubChemSearch();
+        CHEMVENTUR.Audio?.click?.();
+        return;
+      }
+    }
+
+    // 3) Fallback: spawn as single particle (no structure)
     const particle = CHEMVENTUR.PubChem.createParticle(
       compound,
       game.ship.x,
       game.ship.y - 50
     );
-    
+
     game.atoms.push(particle);
     this.showStatus(`🔬 Spawned ${compound.name} (CID: ${compound.cid}) - no structure data`);
     this.closePubChemSearch();
