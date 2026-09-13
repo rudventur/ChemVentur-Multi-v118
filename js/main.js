@@ -944,8 +944,9 @@
         
         // Draw stage 0 HUD
         this.drawStage0HUD();
-        
+
         if (AudioSystem?.isPlaying) this.drawAudioVisualizer();
+        this.drawScaleBar();
         return;
       }
       
@@ -1050,8 +1051,67 @@
       });
       
       if (AudioSystem?.isPlaying) this.drawAudioVisualizer();
+      this.drawScaleBar();
     },
-    
+
+    // ===== ON-CANVAS SCALE BAR =====
+    // A fixed-length screen ruler so distances are comparable across stages
+    // and zoom levels, instead of only implied by object size.
+    drawScaleBar() {
+      const ctx = Renderer.ctx;
+      if (!ctx) return;
+
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0); // fixed screen space — ignore zoom/pan
+
+      const zoom = Renderer.zoomScale || 1;
+      const barScreenPx = 100; // fixed on-screen ruler length
+      const x0 = 15;
+      const y0 = this.height - 24;
+
+      // What the fixed on-screen bar represents in world (game) pixels —
+      // this is the same coordinate space atoms/particles/strings are drawn in
+      const barWorldPx = barScreenPx / zoom;
+
+      let label = `${Math.round(barWorldPx)} px`;
+
+      // Stage 2 has a real chemistry scale already (30px = 1 Ångström,
+      // used by MoleculeStructures/PubChemAPI/RDKit) — show it too
+      if (this.stage === 2) {
+        const PX_PER_ANGSTROM = 30;
+        label += `  ≈ ${(barWorldPx / PX_PER_ANGSTROM).toFixed(2)} Å`;
+      }
+
+      // Bar
+      ctx.strokeStyle = '#00ff41';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x0 + barScreenPx, y0);
+      ctx.moveTo(x0, y0 - 4);
+      ctx.lineTo(x0, y0 + 4);
+      ctx.moveTo(x0 + barScreenPx, y0 - 4);
+      ctx.lineTo(x0 + barScreenPx, y0 + 4);
+      ctx.stroke();
+
+      ctx.fillStyle = '#00ff41';
+      ctx.font = '10px monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(label, x0, y0 - 8);
+
+      // Current pressure-grid cell size — this is what actually changes
+      // between stages (24/12/6 cells across the canvas), not object size
+      const gridConfig = CHEMVENTUR.Config?.GRID;
+      if (gridConfig?.CELLS) {
+        const cellWorldPx = this.width / gridConfig.CELLS;
+        ctx.fillStyle = '#888888';
+        ctx.font = '9px monospace';
+        ctx.fillText(`grid cell: ${cellWorldPx.toFixed(0)}px (${gridConfig.CELLS}×${gridConfig.CELLS} grid)`, x0, y0 + 14);
+      }
+
+      ctx.restore();
+    },
+
     drawAudioVisualizer() {
       const ctx = Renderer.ctx;
       const bands = AudioSystem.getBands();
