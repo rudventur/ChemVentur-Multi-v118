@@ -36,8 +36,12 @@
       }
       
       try {
-        // Setup Firebase reference
-        this.chatRef = CHEMVENTUR.Multiplayer.db.ref('chat/messages');
+        // Setup Firebase reference (scoped to the current room, not global)
+        if (!CHEMVENTUR.Multiplayer.roomRef) {
+          console.log('⚠️ Chat requires an active room');
+          return false;
+        }
+        this.chatRef = CHEMVENTUR.Multiplayer.roomRef.child('chat/messages');
         
         // Setup UI
         this.setupUI();
@@ -143,6 +147,23 @@
       console.log('📤 Sent message:', text);
     },
     
+    // ===== ADD MESSAGE FROM A LOCAL SOURCE (e.g. fun bots) =====
+    addMessage(name, text) {
+      if (!this.enabled || !this.chatRef) return;
+
+      const message = {
+        id: 'bot_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+        playerId: 'localbot',
+        playerName: name,
+        playerColor: '#ffaa00',
+        text: text,
+        timestamp: Date.now(),
+        type: 'chat'
+      };
+
+      this.chatRef.push(message);
+    },
+
     // ===== SEND SYSTEM MESSAGE =====
     sendSystemMessage(text) {
       const message = {

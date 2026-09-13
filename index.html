@@ -597,6 +597,12 @@
     <div style="font-size:8px;color:#666;margin-bottom:8px;">
       📦 Local = instant | 🌐 = Live PubChem API (needs network)
     </div>
+    <div style="display:flex;gap:5px;margin-bottom:10px;">
+      <input type="text" id="smiles-input" placeholder="🧪 Or paste any SMILES: CC(=O)Oc1ccccc1C(=O)O"
+             style="flex:1;padding:8px;background:#001100;border:2px solid #00ffff;color:#0ff;border-radius:5px;font-size:10px;"
+             onkeypress="if(event.key==='Enter')CHEMVENTUR.UI.spawnCustomSmiles()">
+      <button class="btn" onclick="CHEMVENTUR.UI.spawnCustomSmiles()" title="Parse with RDKit and spawn" style="background:#00ffff;color:#000;">🧪 Spawn</button>
+    </div>
     <div id="pubchem-results" style="max-height:280px;overflow-y:auto;font-size:11px;">
       <div style="color:#888;">Search molecules by name, formula, or browse categories...</div>
       <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:3px;">
@@ -610,8 +616,8 @@
         <button class="btn" style="font-size:8px;padding:3px 6px;" onclick="document.getElementById('pubchem-search').value='ammonia';CHEMVENTUR.UI.searchPubChem()">💨 Ammonia</button>
       </div>
     </div>
-    <div style="margin-top:10px;font-size:8px;color:#666;text-align:center;">
-      📦 Local: 60+ compounds | 🌐 API: 100M+ compounds<br>
+    <div id="pubchem-stats" style="margin-top:10px;font-size:8px;color:#666;text-align:center;">
+      📦 Local compounds | 🧪 SMILES: any molecule via RDKit | 🌐 API: 100M+ compounds<br>
       <span style="color:#00ff41;">★ Real 2D structures with bonds!</span>
     </div>
   </div>
@@ -697,6 +703,7 @@
   <script src="js/main.js"></script>
   <script src="js/molecule-rain.js"></script>
   <script src="js/molecule-structures.js"></script>
+  <script src="js/rdkit-v118.js"></script>
   <script src="js/pubchem.js"></script>
   <script src="js/pubchem-api.js"></script>
 </body>
