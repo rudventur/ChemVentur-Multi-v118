@@ -106,13 +106,22 @@ clear() {
     drawAtom(atom) {
       const ctx = this.ctx;
       if (!ctx || !atom) return;
-      
+
       // Guard against NaN/undefined coordinates
       if (!isFinite(atom.x) || !isFinite(atom.y)) return;
-      
+
       ctx.save(); // SAVE STATE
-      
-      const r = Particles.getRadius(atom) || 10;
+
+      const isBuiltAtom = !atom.special && !atom.isNucleus;
+      // Stage 2 (Molecular): atoms render at half the Stage-1 size, and lose
+      // their discrete nucleus/electron markers in favor of a soft mist —
+      // this is purely visual, Particles.getRadius() (physics/bonding/click
+      // hit-testing) is untouched.
+      const isMolecularStage = CHEMVENTUR.Game?.stage === 2;
+
+      let r = Particles.getRadius(atom) || 10;
+      if (isMolecularStage && isBuiltAtom) r = r * 0.5;
+
       const color = Particles.getColor(atom) || '#ffffff';
       const label = Particles.getLabel(atom) || '';
       const MolSys = CHEMVENTUR.MolecularSystem;
@@ -180,8 +189,9 @@ clear() {
         ctx.fill();
       }
       
-      // Nucleus glow for bare nuclei
-      if (atom.isNucleus) {
+      // Nucleus glow for bare nuclei (Stage 2 hides nuclei entirely — even a
+      // bare nucleus just reads as a plain atom, nothing "looks like" a nucleus)
+      if (atom.isNucleus && !isMolecularStage) {
         const grad = ctx.createRadialGradient(atom.x, atom.y, 0, atom.x, atom.y, r);
         grad.addColorStop(0, '#ffcc00');
         grad.addColorStop(1, '#ff6600');
@@ -189,30 +199,36 @@ clear() {
       } else {
         ctx.fillStyle = atom.spectralGlow || color;
       }
-      
+
       // Main body
       ctx.beginPath();
       ctx.arc(atom.x, atom.y, r, 0, Math.PI * 2);
       ctx.fill();
-      
+
       // Crystal lattice indicator
       if (atom.crystalLock) {
         ctx.strokeStyle = '#00ffaa';
         ctx.lineWidth = 2;
         ctx.strokeRect(atom.x - r - 3, atom.y - r - 3, (r + 3) * 2, (r + 3) * 2);
       }
-      
-      // Nucleus dot for regular atoms
-      if (!atom.special && atom.p > 0 && !atom.isNucleus) {
-        ctx.fillStyle = '#ffaa00';
-        ctx.beginPath();
-        ctx.arc(atom.x, atom.y, r * 0.3, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      
-      // Draw electrons
-      if (!atom.special && !atom.isNucleus && atom.e > 0) {
-        this.drawElectrons(atom, r);
+
+      if (isMolecularStage && isBuiltAtom) {
+        // Molecular stage: no discrete nucleus dot or electron dots —
+        // protons/neutrons/electrons render as one soft mist around the atom
+        if (atom.e > 0) this.drawElectronMist(atom, r);
+      } else {
+        // Nucleus dot for regular atoms
+        if (isBuiltAtom && atom.p > 0) {
+          ctx.fillStyle = '#ffaa00';
+          ctx.beginPath();
+          ctx.arc(atom.x, atom.y, r * 0.3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Draw electrons
+        if (isBuiltAtom && atom.e > 0) {
+          this.drawElectrons(atom, r);
+        }
       }
       
       // Molecule label
@@ -249,19 +265,41 @@ clear() {
     drawElectrons(atom, r) {
       const ctx = this.ctx;
       if (!ctx) return;
-      
+
       ctx.save();
       ctx.fillStyle = '#00ffff';
-      
+
       for (let i = 0; i < atom.e; i++) {
         const angle = (atom.orbitAngle || 0) + i * Math.PI * 2 / atom.e;
         const ex = atom.x + Math.cos(angle) * (r + 10);
         const ey = atom.y + Math.sin(angle) * (r + 10);
-        
+
         ctx.beginPath();
         ctx.arc(ex, ey, 2.5, 0, Math.PI * 2);
         ctx.fill();
       }
+      ctx.restore();
+    },
+
+    // Stage 2 (Molecular): a soft diffuse halo standing in for the
+    // proton/neutron/electron cloud, instead of discrete dots — bigger
+    // for atoms with more electrons, but never a hard-edged shape.
+    drawElectronMist(atom, r) {
+      const ctx = this.ctx;
+      if (!ctx) return;
+
+      ctx.save();
+      const mistR = r + 4 + Math.sqrt(atom.e) * 4;
+
+      ctx.globalAlpha = 0.22;
+      const grad = ctx.createRadialGradient(atom.x, atom.y, r * 0.6, atom.x, atom.y, mistR);
+      grad.addColorStop(0, '#00ffff');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(atom.x, atom.y, mistR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
       ctx.restore();
     },
     
