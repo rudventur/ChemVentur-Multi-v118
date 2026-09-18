@@ -839,6 +839,19 @@
       this.envPanelOpen = !this.envPanelOpen;
       panel?.classList.toggle('visible', this.envPanelOpen);
     },
+
+    // ===== FULLSCREEN TOGGLE (click the logo) — same pattern as rudventur.com =====
+    toggleFullscreen() {
+      const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+      if (isFullscreen) {
+        const fn = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+        if (fn) fn.call(document).catch(() => {});
+      } else {
+        const el = document.documentElement;
+        const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+        if (fn) fn.call(el).catch(() => {});
+      }
+    },
     
     // ===== GRAVITY OPTIONS PANEL =====
     openGravityOptions() {

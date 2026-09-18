@@ -201,7 +201,7 @@
       const bot = {
         id: 'homeless_' + Date.now(),
         type: 'homeless',
-        emoji: '🏠',
+        emoji: '🏚️',
         name: 'Homeless Bot',
         color: '#886644',
         x: Math.random() * (game.width - 100) + 50,
@@ -215,7 +215,7 @@
         driftPhase: Math.random() * Math.PI * 2
       };
       this.bots.push(bot);
-      CHEMVENTUR.UI?.showStatus('🏠 Homeless Bot deployed!');
+      CHEMVENTUR.UI?.showStatus('🏚️ Homeless Bot deployed!');
       return bot;
     },
 
@@ -419,7 +419,7 @@
           atoms.splice(nearest.index, 1);
           bot.collectedElectrons++;
           if (bot.collectedElectrons % 5 === 0) {
-            this.addMessage(bot, '🏠 Collected ' + bot.collectedElectrons + ' electrons so far!');
+            this.addMessage(bot, '🏚️ Collected ' + bot.collectedElectrons + ' electrons so far!');
           }
         }
       }
