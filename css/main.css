@@ -131,6 +131,7 @@ canvas#game-canvas {
   bottom: 0;
   background: var(--bg-primary);
   z-index: 2;
+  transition: left var(--transition-normal), top var(--transition-normal);
 }
 
 /* ===== TYPOGRAPHY ===== */

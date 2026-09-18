@@ -25,6 +25,13 @@
       this.bindEnvButton();
       this.bindPeriodicTable();
       this.updateAll();
+
+      // On small phones the panel is a full-screen overlay that hides the
+      // game canvas entirely — start collapsed there so the canvas is
+      // visible by default; togglePanel() brings it back on demand.
+      if (window.innerWidth <= 480) {
+        this.setPanelHidden(true);
+      }
       
       // Initialize EnvCalc
       if (CHEMVENTUR.EnvCalc) {
@@ -838,6 +845,17 @@
       const panel = document.getElementById('env-panel');
       this.envPanelOpen = !this.envPanelOpen;
       panel?.classList.toggle('visible', this.envPanelOpen);
+    },
+
+    // ===== LEFT PANEL TOGGLE (mainly for mobile — full "folded" version is on the roadmap) =====
+    togglePanel() {
+      this.setPanelHidden(!document.body.classList.contains('panel-hidden'));
+    },
+
+    setPanelHidden(hidden) {
+      document.body.classList.toggle('panel-hidden', hidden);
+      const btn = document.getElementById('panel-toggle-btn');
+      if (btn) btn.textContent = hidden ? '☰' : '✕';
     },
 
     // ===== FULLSCREEN TOGGLE (click the logo) — same pattern as rudventur.com =====

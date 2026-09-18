@@ -48,12 +48,20 @@
       if (e.touches.length === 1) {
         const touch = e.touches[0];
         const rect = this.canvas.getBoundingClientRect();
-        
+
         this.touchX = touch.clientX - rect.left;
         this.touchY = touch.clientY - rect.top;
+
+        // Stage-0 HUD minimize/expand toggle — tapping it shouldn't also start dragging the ship
+        if (CHEMVENTUR.Game?.isStage0HUDToggleHit(this.touchX, this.touchY)) {
+          CHEMVENTUR.Game.toggleStage0HUD();
+          if (navigator.vibrate) navigator.vibrate(10);
+          return;
+        }
+
         this.touchId = touch.identifier;
         this.touching = true;
-        
+
         // Haptic feedback
         if (navigator.vibrate) {
           navigator.vibrate(10);

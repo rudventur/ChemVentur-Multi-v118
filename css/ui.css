@@ -18,6 +18,47 @@
   overflow-y: auto;
   overflow-x: hidden;
   z-index: 10;
+  transition: transform var(--transition-normal);
+}
+
+/* ===== PANEL TOGGLE (hide/show the left panel — mainly for mobile) ===== */
+#panel-toggle-btn {
+  position: fixed;
+  top: 8px;
+  left: calc(var(--panel-width) + 8px);
+  width: 32px;
+  height: 32px;
+  background: var(--bg-panel);
+  border: 2px solid var(--neon-green);
+  color: var(--neon-green);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  z-index: 20;
+  transition: left var(--transition-normal);
+}
+#panel-toggle-btn:hover {
+  background: var(--bg-hover);
+}
+body.panel-hidden #left-panel {
+  transform: translateX(-100%);
+}
+body.panel-hidden #canvas-container {
+  left: 0;
+  top: 0;
+}
+body.panel-hidden #panel-toggle-btn {
+  left: 8px;
+}
+
+/* At this width the panel is a full-screen overlay (--panel-width:100%),
+   so "dock right of the panel" would push the button off-screen while
+   open, making it impossible to close again — pin it to the corner instead */
+@media (max-width: 480px) {
+  #panel-toggle-btn {
+    left: 8px;
+  }
 }
 
 /* ===== LOGO (click to toggle fullscreen) ===== */

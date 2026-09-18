@@ -75,6 +75,11 @@
     rainActive: false, targetZ: null, inventory: [],
     mouseX: 0, mouseY: 0, dragged: null,
     isAiming: false, mouseHeld: false,
+    stage0HUDMinimized: false,
+    // x:44 (not the literal canvas corner) so this never sits under the
+    // fixed-position #panel-toggle-btn, which occupies page (8,8)-(40,40)
+    // whenever the canvas starts at page x:0 (i.e. the left panel is hidden)
+    STAGE0_HUD_TOGGLE: { x: 44, y: 12, size: 16 },
     
     init() {
       console.log('🎃💚 CHEMVENTUR v117 MULTI init starting! 💚🎃');
@@ -188,17 +193,34 @@
       }
     },
     
+    // Hit-test for the Stage-0 HUD minimize/expand square (shared by mouse + touch)
+    isStage0HUDToggleHit(x, y) {
+      if (this.stage !== 0) return false;
+      const t = this.STAGE0_HUD_TOGGLE;
+      return x >= t.x && x <= t.x + t.size && y >= t.y && y <= t.y + t.size;
+    },
+
+    toggleStage0HUD() {
+      this.stage0HUDMinimized = !this.stage0HUDMinimized;
+    },
+
     // MOUSE DOWN - Start aiming or dragging
     onMouseDown(e) {
       if (e.button === 2) return; // Right click handled separately
-      
+
       const rect = this.canvas.getBoundingClientRect();
       const mx = e.clientX - rect.left;
       const my = e.clientY - rect.top;
-      
+
       if (Audio) Audio.resume();
       if (AudioSystem?.ctx?.state === 'suspended') AudioSystem.ctx.resume();
-      
+
+      // Stage-0 HUD minimize/expand toggle takes priority over aiming/dragging
+      if (this.isStage0HUDToggleHit(mx, my)) {
+        this.toggleStage0HUD();
+        return;
+      }
+
       // Check if clicking on an atom to drag
       for (const atom of this.atoms) {
         const r = Particles.getRadius(atom);
@@ -1169,104 +1191,144 @@
     drawStage0HUD() {
       const ctx = Renderer.ctx;
       const stats = StringSystem?.getStats() || {};
-      
-      // HUD background - larger for more info
-      ctx.fillStyle = 'rgba(0, 20, 0, 0.85)';
-      ctx.fillRect(10, 10, 280, 200);
-      ctx.strokeStyle = '#00ff41';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(10, 10, 280, 200);
-      
-      // Title
-      ctx.fillStyle = '#00ff41';
-      ctx.font = 'bold 14px monospace';
-      ctx.fillText('🎻 STRING UNIVERSE', 20, 30);
-      
-      // Stats
-      ctx.font = '11px monospace';
-      ctx.fillStyle = '#ffffff';
-      
-      let y = 50;
-      ctx.fillText(`Strings: ${stats.strings || 0}`, 20, y); y += 15;
-      ctx.fillText(`Quarks: ${stats.quarks || 0} (u:${stats.upQuarks || 0} d:${stats.downQuarks || 0})`, 20, y); y += 15;
-      
-      // Particle counts with color coding
-      ctx.fillStyle = '#ff3333';
-      ctx.fillText(`Protons:   ${stats.protons || 0}/92`, 20, y); y += 15;
-      ctx.fillStyle = '#cccccc';
-      ctx.fillText(`Neutrons:  ${stats.neutrons || 0}/146`, 20, y); y += 15;
-      ctx.fillStyle = '#00ffff';
-      ctx.fillText(`Electrons: ${stats.electrons || 0}/92`, 20, y); y += 15;
-      
-      // Gluon web info
-      ctx.fillStyle = '#ffff00';
-      ctx.fillText(`Gluon Webs: ${stats.gluonWebs || 0} (${stats.capturedInWebs || 0} captured)`, 20, y); y += 15;
-      
-      // Fused atoms
-      if (stats.atoms > 0) {
-        ctx.fillStyle = '#88ff00';
-        ctx.fillText(`Fused Atoms: ${stats.atoms}`, 20, y); y += 15;
-      }
-      
-      y += 5;
-      
-      // Uranium progress bar!
       const progress = stats.uraniumProgress || 0;
-      const barWidth = 240;
-      const barHeight = 20;
-      
-      // Background
-      ctx.fillStyle = '#333';
-      ctx.fillRect(20, y, barWidth, barHeight);
-      
-      // Progress fill with gradient
-      if (progress > 0) {
-        const grad = ctx.createLinearGradient(20, y, 20 + barWidth * (progress / 100), y);
-        grad.addColorStop(0, '#004400');
-        grad.addColorStop(0.5, progress >= 100 ? '#ffff00' : '#00ff41');
-        grad.addColorStop(1, progress >= 100 ? '#ff8800' : '#88ff00');
-        ctx.fillStyle = grad;
-        ctx.fillRect(20, y, barWidth * (progress / 100), barHeight);
+      const t = this.STAGE0_HUD_TOGGLE;
+
+      if (this.stage0HUDMinimized) {
+        // ===== MINIMIZED: tiny box — toggle square + uranium progress, always visible =====
+        const boxW = 180, boxH = 40;
+        ctx.fillStyle = 'rgba(0, 20, 0, 0.85)';
+        ctx.fillRect(10, 10, boxW, boxH);
+        ctx.strokeStyle = '#00ff41';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(10, 10, boxW, boxH);
+
+        const barX = t.x + t.size + 8, barY = 15, barW = 92, barH = 12;
+        ctx.fillStyle = '#333';
+        ctx.fillRect(barX, barY, barW, barH);
+        if (progress > 0) {
+          ctx.fillStyle = progress >= 100 ? '#ffff00' : '#00ff41';
+          ctx.fillRect(barX, barY, barW * (progress / 100), barH);
+        }
+        ctx.strokeStyle = progress >= 100 ? '#ffff00' : '#00ff41';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(barX, barY, barW, barH);
+
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 9px monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(`☢️ URANIUM: ${progress}%`, t.x, 38);
+
+      } else {
+        // ===== FULL HUD =====
+        ctx.fillStyle = 'rgba(0, 20, 0, 0.85)';
+        ctx.fillRect(10, 10, 280, 200);
+        ctx.strokeStyle = '#00ff41';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(10, 10, 280, 200);
+
+        // Title (shifted right to leave room for the toggle square)
+        ctx.fillStyle = '#00ff41';
+        ctx.font = 'bold 14px monospace';
+        ctx.fillText('🎻 STRING UNIVERSE', 68, 30);
+
+        // Stats
+        ctx.font = '11px monospace';
+        ctx.fillStyle = '#ffffff';
+
+        let y = 50;
+        ctx.fillText(`Strings: ${stats.strings || 0}`, 20, y); y += 15;
+        ctx.fillText(`Quarks: ${stats.quarks || 0} (u:${stats.upQuarks || 0} d:${stats.downQuarks || 0})`, 20, y); y += 15;
+
+        // Particle counts with color coding
+        ctx.fillStyle = '#ff3333';
+        ctx.fillText(`Protons:   ${stats.protons || 0}/92`, 20, y); y += 15;
+        ctx.fillStyle = '#cccccc';
+        ctx.fillText(`Neutrons:  ${stats.neutrons || 0}/146`, 20, y); y += 15;
+        ctx.fillStyle = '#00ffff';
+        ctx.fillText(`Electrons: ${stats.electrons || 0}/92`, 20, y); y += 15;
+
+        // Gluon web info
+        ctx.fillStyle = '#ffff00';
+        ctx.fillText(`Gluon Webs: ${stats.gluonWebs || 0} (${stats.capturedInWebs || 0} captured)`, 20, y); y += 15;
+
+        // Fused atoms
+        if (stats.atoms > 0) {
+          ctx.fillStyle = '#88ff00';
+          ctx.fillText(`Fused Atoms: ${stats.atoms}`, 20, y); y += 15;
+        }
+
+        y += 5;
+
+        // Uranium progress bar!
+        const barWidth = 240;
+        const barHeight = 20;
+
+        // Background
+        ctx.fillStyle = '#333';
+        ctx.fillRect(20, y, barWidth, barHeight);
+
+        // Progress fill with gradient
+        if (progress > 0) {
+          const grad = ctx.createLinearGradient(20, y, 20 + barWidth * (progress / 100), y);
+          grad.addColorStop(0, '#004400');
+          grad.addColorStop(0.5, progress >= 100 ? '#ffff00' : '#00ff41');
+          grad.addColorStop(1, progress >= 100 ? '#ff8800' : '#88ff00');
+          ctx.fillStyle = grad;
+          ctx.fillRect(20, y, barWidth * (progress / 100), barHeight);
+        }
+
+        // Border
+        ctx.strokeStyle = progress >= 100 ? '#ffff00' : '#00ff41';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(20, y, barWidth, barHeight);
+
+        // Progress text
+        ctx.fillStyle = progress >= 100 ? '#000' : '#fff';
+        ctx.font = 'bold 12px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`☢️ URANIUM: ${progress}%`, 20 + barWidth/2, y + 14);
+        ctx.textAlign = 'left';
+
+        y += barHeight + 10;
+
+        // Instructions
+        ctx.fillStyle = '#888';
+        ctx.font = '9px monospace';
+        ctx.fillText('Keys 1-3: p/n/e strings | 5: Gluon web', 20, y); y += 12;
+        ctx.fillText('Hold mouse to aim, release to fire', 20, y);
+
+        // Gun indicator
+        const gunNames = {
+          1: 'Up Quark', 2: 'Down Quark', 3: 'Electron',
+          4: 'Rain', 5: 'Gluon', 6: 'Shotgun',
+          7: 'Photon', 8: 'Graviton', 9: 'Knot', 0: 'Time'
+        };
+        ctx.fillStyle = '#00ffff';
+        ctx.font = '10px monospace';
+        ctx.fillText(`Gun: ${gunNames[GunSystem.currentGun] || '?'}`, this.width - 120, 25);
       }
-      
-      // Border
-      ctx.strokeStyle = progress >= 100 ? '#ffff00' : '#00ff41';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(20, y, barWidth, barHeight);
-      
-      // Progress text
-      ctx.fillStyle = progress >= 100 ? '#000' : '#fff';
+
+      // Toggle square — drawn in both states, top-left corner of the HUD box
+      ctx.fillStyle = this.stage0HUDMinimized ? '#004400' : '#00ff41';
+      ctx.fillRect(t.x, t.y, t.size, t.size);
+      ctx.strokeStyle = '#001100';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(t.x, t.y, t.size, t.size);
+      ctx.fillStyle = this.stage0HUDMinimized ? '#00ff41' : '#001100';
       ctx.font = 'bold 12px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(`☢️ URANIUM: ${progress}%`, 20 + barWidth/2, y + 14);
+      ctx.fillText(this.stage0HUDMinimized ? '+' : '−', t.x + t.size / 2, t.y + t.size - 3);
       ctx.textAlign = 'left';
-      
-      y += barHeight + 10;
-      
-      // Instructions
-      ctx.fillStyle = '#888';
-      ctx.font = '9px monospace';
-      ctx.fillText('Keys 1-3: p/n/e strings | 5: Gluon web', 20, y); y += 12;
-      ctx.fillText('Hold mouse to aim, release to fire', 20, y);
-      
-      // Gun indicator
-      const gunNames = {
-        1: 'Up Quark', 2: 'Down Quark', 3: 'Electron',
-        4: 'Rain', 5: 'Gluon', 6: 'Shotgun',
-        7: 'Photon', 8: 'Graviton', 9: 'Knot', 0: 'Time'
-      };
-      ctx.fillStyle = '#00ffff';
-      ctx.font = '10px monospace';
-      ctx.fillText(`Gun: ${gunNames[GunSystem.currentGun] || '?'}`, this.width - 120, 25);
-      
-      // Victory text if uranium achieved!
+
+      // Victory text if uranium achieved! (independent of minimize state)
       if (stats.hasUranium) {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         ctx.fillRect(this.width/2 - 150, this.height/2 - 40, 300, 80);
         ctx.strokeStyle = '#ffff00';
         ctx.lineWidth = 3;
         ctx.strokeRect(this.width/2 - 150, this.height/2 - 40, 300, 80);
-        
+
         ctx.fillStyle = '#ffff00';
         ctx.font = 'bold 24px monospace';
         ctx.textAlign = 'center';
