@@ -111,24 +111,34 @@
       if (SoundPhysics) SoundPhysics.init(this.width, this.height);
       
       // 🛠️ Initialize Ship Repair System!
+      // (each optional module is isolated: a failure here must never stop
+      // the game loop from starting — see loop() for the matching per-frame guard)
       if (CHEMVENTUR.ShipRepair) {
-        CHEMVENTUR.ShipRepair.init();
-        console.log('🛠️ Ship Repair System ready!');
+        try {
+          CHEMVENTUR.ShipRepair.init();
+          console.log('🛠️ Ship Repair System ready!');
+        } catch (e) { console.error('ShipRepair init failed (continuing):', e); }
       }
-      
+
       // 📱 Initialize Touch Controls (v117)
       if (CHEMVENTUR.TouchControls) {
-        CHEMVENTUR.TouchControls.init(this.canvas);
+        try {
+          CHEMVENTUR.TouchControls.init(this.canvas);
+        } catch (e) { console.error('TouchControls init failed (continuing):', e); }
       }
 
       // ⏱️ Initialize Left Panel multiplayer-setting sync (v119)
       if (CHEMVENTUR.LeftPanelSync) {
-        CHEMVENTUR.LeftPanelSync.init();
+        try {
+          CHEMVENTUR.LeftPanelSync.init();
+        } catch (e) { console.error('LeftPanelSync init failed (continuing):', e); }
       }
-      
+
       // 🎤 Initialize Microphone (v117)
       if (CHEMVENTUR.MicrophonePressure) {
-        CHEMVENTUR.MicrophonePressure.init();
+        try {
+          CHEMVENTUR.MicrophonePressure.init();
+        } catch (e) { console.error('MicrophonePressure init failed (continuing):', e); }
       }
       
       this.edgeWhiteHorizon = Holes.createEdgeHorizon();
@@ -147,15 +157,22 @@
       // SHIFT + Mouse Wheel = Stage change! CTRL + Wheel = Zoom!
       this.canvas.addEventListener('wheel', (e) => this.onWheel(e), { passive: false });
       
-      UI.init();
-      this.spawnInitialAtoms();
-      console.log('Atoms spawned:', this.atoms.length, this.atoms);
-      
+      try {
+        UI.init();
+      } catch (e) { console.error('UI init failed (continuing):', e); }
+
+      try {
+        this.spawnInitialAtoms();
+        console.log('Atoms spawned:', this.atoms.length, this.atoms);
+      } catch (e) { console.error('spawnInitialAtoms failed (continuing):', e); }
+
       // Initialize enhancements (right-click menus, movement, upgrades)
       if (CHEMVENTUR.Enhancements) {
-        CHEMVENTUR.Enhancements.init();
+        try {
+          CHEMVENTUR.Enhancements.init();
+        } catch (e) { console.error('Enhancements init failed (continuing):', e); }
       }
-      
+
       this.loop();
       UI.showStatus('🎃💚 v117: Multiplayer + Touch + Mic Waves! 💚🎃', 5000);
       
@@ -466,9 +483,16 @@
     },
     
     loop() {
-      this.update();
-      this.render();
+      // Schedule the next frame FIRST: one bad frame must never kill the
+      // whole animation loop. If update()/render() throws, we log it and
+      // just skip that frame instead of freezing the game forever.
       requestAnimationFrame(() => this.loop());
+      try {
+        this.update();
+        this.render();
+      } catch (e) {
+        console.error('Game loop error (frame skipped, loop continues):', e);
+      }
     },
     
     update() {
