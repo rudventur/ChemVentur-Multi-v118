@@ -120,6 +120,11 @@
       if (CHEMVENTUR.TouchControls) {
         CHEMVENTUR.TouchControls.init(this.canvas);
       }
+
+      // ⏱️ Initialize Left Panel multiplayer-setting sync (v119)
+      if (CHEMVENTUR.LeftPanelSync) {
+        CHEMVENTUR.LeftPanelSync.init();
+      }
       
       // 🎤 Initialize Microphone (v117)
       if (CHEMVENTUR.MicrophonePressure) {
@@ -256,30 +261,35 @@
       
       if (this.isAiming) {
         this.isAiming = false;
-        
-        // STAGE 0: Fire strings!
-        if (this.stage === 0 && StringSystem) {
-          const result = StringSystem.fireString(
-            this.ship.x, this.ship.y, 
-            GunSystem.currentGun, 
-            GunSystem.aimAngle
-          );
-          if (result) {
-            Audio?.shoot();
-            if (result.type === 'shotgun') UI.showStatus(`🎻 ${result.count} strings!`);
-            else if (result.type === 'crossed') UI.showStatus('⏳ Time strings!');
-          }
-        }
-        // STAGE 1 & 2: Normal gun behavior
-        else {
-          const result = GunSystem.fire(this.ship.x, this.ship.y, this.atoms, this.projectiles);
-          if (result) {
-            Audio?.shoot();
-            if (result.isSpeaker) UI.showStatus('🔊 Speaker Orb!');
-            if (result.organic) UI.showStatus('🧬 Organic blast!');
-          }
-        }
+        this.fireCurrentGun();
       }
+    },
+
+    // Fire whatever gun/stage is active in the ship's current aim direction.
+    // Shared by mouse release (desktop) and the mobile FIRE button.
+    fireCurrentGun() {
+      // STAGE 0: Fire strings!
+      if (this.stage === 0 && StringSystem) {
+        const result = StringSystem.fireString(
+          this.ship.x, this.ship.y,
+          GunSystem.currentGun,
+          GunSystem.aimAngle
+        );
+        if (result) {
+          Audio?.shoot();
+          if (result.type === 'shotgun') UI.showStatus(`🎻 ${result.count} strings!`);
+          else if (result.type === 'crossed') UI.showStatus('⏳ Time strings!');
+        }
+        return result;
+      }
+      // STAGE 1 & 2: Normal gun behavior
+      const result = GunSystem.fire(this.ship.x, this.ship.y, this.atoms, this.projectiles);
+      if (result) {
+        Audio?.shoot();
+        if (result.isSpeaker) UI.showStatus('🔊 Speaker Orb!');
+        if (result.organic) UI.showStatus('🧬 Organic blast!');
+      }
+      return result;
     },
     
     // RIGHT CLICK - Open gun options on canvas

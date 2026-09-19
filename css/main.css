@@ -242,11 +242,25 @@ a:hover {
 
 @media (max-width: 480px) {
   :root {
-    --panel-width: 100%;
+    --panel-width: 86%;
   }
-  
+
+  /* 📱 On phone-width screens the panel becomes a slide-in drawer
+     (toggled by #panel-toggle-btn) so the canvas is visible and
+     playable by default, instead of the panel covering it. */
+  #left-panel {
+    max-width: 340px;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6);
+  }
+
+  #left-panel.panel-open {
+    transform: translateX(0);
+  }
+
   #canvas-container {
     left: 0;
-    top: 200px;
+    top: 0;
   }
 }

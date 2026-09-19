@@ -136,6 +136,9 @@
           angle: 0,
           hp: 100,
           gun: 5,
+          settings: {
+            turnSeconds: CHEMVENTUR.LeftPanelSync?.mySettings.turnSeconds || 30
+          },
           online: true,
           lastHeartbeat: firebase.database.ServerValue.TIMESTAMP,
           lastUpdate: firebase.database.ServerValue.TIMESTAMP
