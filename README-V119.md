@@ -74,4 +74,10 @@ Scoped out to keep this pass focused and testable — flagging so the next sessi
 
 ---
 
+## 🎲 Side Quests (small, low-priority polish items)
+
+- **Kill the `I`/`l` lookalike problem.** `VT323` (the game's own display font) renders capital `I` and lowercase `l` almost identically — same in a lot of monospace fonts generally. Anywhere the UI shows an acronym, a code, or a room code (`CI`, `Cl`, a Firebase key, a room code with an `I`/`l`/`1` in it...) it's a squint-and-guess. Fix: either swap in a font with disambiguated glyphs for code-ish text (`JetBrains Mono`, `Fira Code`, `Space Mono` all do this well) scoped to labels/codes/chat, or add a small CSS trick (e.g. a serif on capital I, or extra letter-spacing) just for those spots — no need to touch the main VT323/Press Start 2P look everywhere else. Room codes already avoid ambiguous characters (see `generateRoomId()` in `multiplayer-v117.js`) — this would close the same gap everywhere else text gets read at a glance.
+
+---
+
 **🎃 ENJOY THE GAME, PUMPKIN! 💚**
