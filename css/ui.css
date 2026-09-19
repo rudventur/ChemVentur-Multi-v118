@@ -621,17 +621,199 @@ select:focus {
   opacity: 1;
 }
 
+/* ===== 📱 MOBILE PANEL TOGGLE (drawer open/close) ===== */
+#panel-toggle-btn {
+  display: none;
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 25;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(0, 20, 0, 0.85);
+  border: 2px solid var(--neon-green);
+  color: var(--neon-green);
+  font-size: 18px;
+  box-shadow: var(--glow-neon);
+}
+
+#panel-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 9;
+}
+
+#panel-backdrop.visible {
+  display: block;
+}
+
+@media (max-width: 480px) {
+  #panel-toggle-btn {
+    display: block;
+  }
+}
+
+/* ===== 📱 MOBILE CONTROLS (fire button + gun picker) ===== */
+#mobile-controls {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  z-index: 15;
+  pointer-events: none;
+}
+
+#mobile-controls.mobile-controls-visible {
+  display: block;
+}
+
+#mobile-fire-btn {
+  position: absolute;
+  right: 16px;
+  bottom: 0;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,0,68,0.35), rgba(20,0,0,0.85));
+  color: #ff3355;
+  border: 3px solid #ff3355;
+  box-shadow: 0 0 16px rgba(255,0,68,0.7);
+  font-family: var(--font-main);
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: bold;
+  touch-action: none;
+  pointer-events: auto;
+  user-select: none;
+}
+
+#mobile-fire-btn:active {
+  background: radial-gradient(circle, rgba(255,0,68,0.7), rgba(20,0,0,0.9));
+  transform: scale(0.94);
+}
+
+#mobile-gun-picker {
+  position: absolute;
+  left: 16px;
+  bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 10, 0, 0.8);
+  border: 2px solid var(--neon-green);
+  border-radius: 30px;
+  padding: 4px 6px;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+}
+
+.mobile-ctrl-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--bg-input);
+  color: var(--neon-green);
+  border: 2px solid var(--neon-green);
+  font-size: 18px;
+  font-weight: bold;
+  touch-action: none;
+}
+
+.mobile-ctrl-btn:active {
+  background: var(--neon-green);
+  color: var(--bg-primary);
+}
+
+#mobile-gun-current {
+  min-width: 78px;
+  text-align: center;
+  color: var(--neon-green);
+  font-size: 11px;
+  padding: 0 4px;
+  text-shadow: var(--glow-neon);
+}
+
+/* ===== LEFT PANEL AGREEMENT-COLORED SETTINGS (item 4) ===== */
+.lp-btn {
+  display: block;
+  background: var(--bg-input);
+  border: 2px solid var(--neon-green);
+  color: var(--neon-green);
+  border-radius: var(--border-radius-sm);
+  padding: 6px;
+  font-family: var(--font-main);
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+/* Green = everyone in the room agrees on this setting */
+.lp-btn.lp-agree {
+  border-color: var(--neon-green);
+  color: var(--neon-green);
+  box-shadow: var(--glow-neon);
+}
+
+/* Grey = players' settings differ */
+.lp-btn.lp-differ {
+  border-color: #777;
+  color: #aaa;
+  box-shadow: none;
+}
+
+/* Red pattern = changed by another player, not yet agreed */
+.lp-btn.lp-pending {
+  border-color: #ff0044;
+  color: #ff6688;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 0, 68, 0.25),
+    rgba(255, 0, 68, 0.25) 6px,
+    rgba(0, 0, 0, 0.2) 6px,
+    rgba(0, 0, 0, 0.2) 12px
+  );
+  animation: lp-pending-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes lp-pending-pulse {
+  0%, 100% { box-shadow: 0 0 4px #ff0044; }
+  50% { box-shadow: 0 0 12px #ff0044; }
+}
+
+.lp-presets-menu {
+  display: none;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 4px;
+  padding: 4px;
+  background: var(--bg-primary);
+  border: 1px solid var(--neon-green);
+  border-radius: var(--border-radius-sm);
+}
+
+.lp-presets-menu.visible {
+  display: flex;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   #gun-selector {
-    gap: 1px;
+    gap: 3px;
   }
-  
+
   .gun-btn {
-    padding: 1px 3px;
-    font-size: 7px;
+    padding: 6px 4px;
+    font-size: 10px;
+    min-height: 34px;
+    min-width: 44px;
+    flex: 1 1 auto;
   }
-  
+
   .popup-panel {
     width: 90%;
     max-width: 400px;

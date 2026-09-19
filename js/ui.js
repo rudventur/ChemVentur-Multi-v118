@@ -25,14 +25,83 @@
       this.bindEnvButton();
       this.bindPeriodicTable();
       this.updateAll();
-      
+
       // Initialize EnvCalc
       if (CHEMVENTUR.EnvCalc) {
         CHEMVENTUR.EnvCalc.init();
       }
-      
+
       // Build periodic table
       this.buildPeriodicTableFull();
+
+      // 🔗 Shareable room links: prefill the join box from ?room=CODE
+      this.applyRoomLinkParam();
+    },
+
+    // 📱 Left panel drawer (phone-width screens): keeps the canvas
+    // visible and playable by default instead of the panel covering it.
+    togglePanel() {
+      const panel = document.getElementById('left-panel');
+      if (!panel) return;
+      const open = panel.classList.toggle('panel-open');
+      document.getElementById('panel-backdrop')?.classList.toggle('visible', open);
+    },
+
+    closePanel() {
+      document.getElementById('left-panel')?.classList.remove('panel-open');
+      document.getElementById('panel-backdrop')?.classList.remove('visible');
+    },
+
+    applyRoomLinkParam() {
+      const params = new URLSearchParams(location.search);
+      const roomParam = params.get('room');
+      if (!roomParam) return;
+      const code = roomParam.toUpperCase().trim();
+      const codeInput = document.getElementById('room-code-input');
+      if (codeInput) codeInput.value = code;
+      this.showStatus('🔗 Room code from link: ' + code + ' — press JOIN', 6000);
+    },
+
+    // ===== 🏠 ROOM CODE PANEL =====
+    showRoomCodePanel(code) {
+      const el = document.getElementById('room-code-big');
+      if (el) el.textContent = code;
+      document.getElementById('room-code-panel')?.classList.add('visible');
+    },
+
+    closeRoomCodePanel() {
+      document.getElementById('room-code-panel')?.classList.remove('visible');
+    },
+
+    getRoomShareLink() {
+      const Multi = CHEMVENTUR.Multiplayer;
+      return location.origin + location.pathname + '?room=' + (Multi?.roomId || '');
+    },
+
+    copyRoomCode() {
+      const Multi = CHEMVENTUR.Multiplayer;
+      const code = Multi?.roomId || '';
+      this.copyText(code, 'Code copied: ' + code);
+    },
+
+    copyRoomLink() {
+      this.copyText(this.getRoomShareLink(), 'Link copied!');
+    },
+
+    copyText(text, msg) {
+      const announce = () => {
+        const el = document.getElementById('room-code-copied-msg');
+        if (el) {
+          el.textContent = '✅ ' + msg;
+          setTimeout(() => { el.textContent = ''; }, 2000);
+        }
+        this.showStatus('📋 ' + msg);
+      };
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(text).then(announce).catch(() => prompt('Copy:', text));
+      } else {
+        prompt('Copy:', text);
+      }
     },
     
     // ===== PERIODIC TABLE FULL =====
@@ -668,6 +737,9 @@
           await CHEMVENTUR.Chat.init();
           self.showStatus('💬 Chat ready!', 2000);
         }
+
+        // ⏱️ Publish my current Left Panel settings (turn timer, ...) to the room
+        CHEMVENTUR.LeftPanelSync?.pushToFirebase?.();
       };
 
       const onDisconnected = (Multi) => {
@@ -694,6 +766,7 @@
             const success = await Multi.createRoom(nameInput.value || 'Pumpkin');
             if (success) {
               await onConnected(Multi);
+              self.showRoomCodePanel(Multi.roomId);
             } else {
               multiBtn.textContent = '❌ FAILED - Try Again';
               multiBtn.disabled = false;
@@ -1044,9 +1117,7 @@
       document.querySelectorAll('.gun-btn').forEach(btn => {
         btn.onclick = () => {
           const gunId = btn.dataset.gun === '0' ? 0 : parseInt(btn.dataset.gun);
-          CHEMVENTUR.GunSystem.currentGun = gunId;
-          this.updateGunDisplay();
-          this.showStatus(`🔫 ${Guns[gunId].name}`);
+          this.selectGun(gunId);
         };
         btn.oncontextmenu = (e) => {
           e.preventDefault();
@@ -1054,6 +1125,14 @@
           this.openGunOptions(gunId);
         };
       });
+    },
+
+    // Shared gun-selection logic (desktop gun grid, keyboard, mobile gun picker)
+    selectGun(gunId) {
+      CHEMVENTUR.GunSystem.currentGun = gunId;
+      this.updateGunDisplay();
+      this.showStatus(`🔫 ${Guns[gunId].name}`);
+      CHEMVENTUR.TouchControls?.updateGunLabel?.();
     },
     
     bindKeyboard() {
@@ -1064,12 +1143,10 @@
         
         // Gun selection: 1-9 and 0
         if (e.key >= '1' && e.key <= '9') {
-          CHEMVENTUR.GunSystem.currentGun = parseInt(e.key);
-          this.updateGunDisplay();
+          this.selectGun(parseInt(e.key));
         }
         if (e.key === '0') {
-          CHEMVENTUR.GunSystem.currentGun = 0;
-          this.updateGunDisplay();
+          this.selectGun(0);
         }
         
         // ZOOM: - (minus) = zoom out, = (plus) = zoom in
