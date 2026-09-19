@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎃💚 CHEMVENTUR v118 – AI Players & Chat Edition! 💚🎃</title>
+  <title>🎃💚 CHEMVENTUR v119 – Left Panel Taskbar Edition! 💚🎃</title>
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/ui.css">
   <link rel="stylesheet" href="css/effects.css">
@@ -19,9 +19,15 @@
   <div id="panel-backdrop" onclick="CHEMVENTUR.UI.closePanel()"></div>
 
   <div id="left-panel">
-    <h1>🎃 CHEMVENTUR v118 💚</h1>
+    <h1 id="logo-btn" onclick="CHEMVENTUR.UI.toggleScreenModeMenu()" title="Screen mode options">🎃 CHEMVENTUR v119 💚</h1>
+    <div id="screen-mode-menu" class="lp-presets-menu">
+      <button class="btn small" onclick="CHEMVENTUR.UI.toggleFullscreen()">⛶ Fullscreen</button>
+      <button class="btn small" onclick="CHEMVENTUR.UI.lockLandscape()">📱 Landscape</button>
+      <button class="btn small" onclick="CHEMVENTUR.UI.lockLandscape(true)">🔒 Lock Landscape</button>
+      <button class="btn small" onclick="CHEMVENTUR.UI.unlockOrientation()">🔓 Unlock</button>
+    </div>
     <div style="text-align:center;font-size:9px;color:#ff00ff;margin-bottom:8px;">
-      🤖💬 AI Players & Chat Edition! 💬🤖
+      🤖💬 Left Panel Taskbar Edition! 💬🤖
     </div>
     
     <!-- 🚀 SHIP HP BAR! -->
@@ -81,23 +87,28 @@
       </button>
     </div>
     
-    <div class="info-window mt-sm">
-      <strong>🔫 GUNS (1-9, 0):</strong>
-      <div id="gun-selector">
-        <button class="gun-btn" data-gun="1">1:p⁺</button>
-        <button class="gun-btn" data-gun="2">2:n</button>
-        <button class="gun-btn" data-gun="3">3:e⁻🎵</button>
-        <button class="gun-btn" data-gun="4">4:☯Rain</button>
-        <button class="gun-btn active" data-gun="5">5:⚛Atom</button>
-        <button class="gun-btn" data-gun="6">6:🧬Shot</button>
-        <button class="gun-btn" data-gun="7">7:🎵Beam</button>
-        <button class="gun-btn" data-gun="8">8:✨Anti</button>
-        <button class="gun-btn" data-gun="9">9:🔮Grav</button>
-        <button class="gun-btn" data-gun="0">0:⏰Time</button>
+    <div class="lp-section" id="lp-sec-guns">
+      <div class="lp-section-header" onclick="CHEMVENTUR.UI.toggleSection('guns')">
+        <span>🔫 GUNS (1-9, 0)</span>
+        <span class="lp-section-arrow">▾</span>
+      </div>
+      <div class="lp-section-body">
+        <div class="lp-section-explain">Pick a gun to fire with click/tap+release (desktop) or the FIRE button (phone). Right-click / long-press any gun for its options.</div>
+        <div id="gun-selector">
+          <button class="gun-btn" data-gun="1">1:p⁺</button>
+          <button class="gun-btn" data-gun="2">2:n</button>
+          <button class="gun-btn" data-gun="3">3:e⁻🎵</button>
+          <button class="gun-btn" data-gun="4">4:☯Rain</button>
+          <button class="gun-btn active" data-gun="5">5:⚛Atom</button>
+          <button class="gun-btn" data-gun="6">6:🧬Shot</button>
+          <button class="gun-btn" data-gun="7">7:🎵Beam</button>
+          <button class="gun-btn" data-gun="8">8:✨Anti</button>
+          <button class="gun-btn" data-gun="9">9:🔮Grav</button>
+          <button class="gun-btn" data-gun="0">0:⏰Time</button>
+        </div>
+        <div class="mt-sm" style="font-size:10px">Gun: <span id="gun-name" class="neon-text">Atom Gun</span></div>
       </div>
     </div>
-    
-    <div class="mt-sm" style="font-size:10px">Gun: <span id="gun-name" class="neon-text">Atom Gun</span></div>
     
     <div class="info-window compact" style="border-color:#ff0044">
       <strong style="color:#ff0044">🔗 MOLECULAR DREAMS!</strong><br>
@@ -123,38 +134,49 @@
     </div>
     
     <!-- 👥 MULTIPLAYER ROOMS - v118! -->
-    <div class="info-window compact" style="border-color:#ff00ff;background:linear-gradient(135deg,rgba(255,0,255,0.1),rgba(0,255,255,0.1));">
-      <strong style="color:#ff00ff">👥 MULTIPLAYER</strong><br>
-      <input type="text" id="player-name-input" placeholder="Your name" value="Pumpkin"
-             style="width:100%;padding:6px;margin:4px 0;background:#002200;color:#00ff41;border:1px solid #ff00ff;border-radius:3px;font-size:10px;">
-      <button class="btn full-width" id="btn-multiplayer" style="background:linear-gradient(90deg,#ff00ff,#00ffff);color:#000;font-weight:bold;font-size:11px;padding:6px;">
-        🌐 CREATE ROOM
-      </button>
-      <div style="display:flex;gap:3px;margin-top:4px;">
-        <input type="text" id="room-code-input" placeholder="Room code" maxlength="6"
-               style="flex:1;padding:5px;background:#002200;color:#00ffff;border:1px solid #00ffff;border-radius:3px;font-size:11px;text-transform:uppercase;letter-spacing:2px;text-align:center;">
-        <button class="btn" id="btn-join-room" style="font-size:10px;padding:5px 8px;">JOIN</button>
+    <div class="lp-section" id="lp-sec-multiplayer">
+      <div class="lp-section-header" onclick="CHEMVENTUR.UI.toggleSection('multiplayer')" style="background:rgba(255,0,255,0.12);">
+        <span style="color:#ff00ff">👥 MULTIPLAYER</span>
+        <span class="lp-section-arrow">▾</span>
       </div>
-      <div id="multiplayer-status" style="font-size:9px;margin-top:4px;color:#888;text-align:center;">Create or join a room!</div>
-      <div id="player-list-v117" style="font-size:9px;margin-top:4px;max-height:60px;overflow-y:auto;"></div>
+      <div class="lp-section-body" style="background:linear-gradient(135deg,rgba(255,0,255,0.1),rgba(0,255,255,0.1));">
+        <div class="lp-section-explain">Create a room to play with a friend and any number of observers, or join one with a code. The turn timer below is part of the same room.</div>
+        <input type="text" id="player-name-input" placeholder="Your name" value="Pumpkin"
+               style="width:100%;padding:6px;margin:4px 0;background:#002200;color:#00ff41;border:1px solid #ff00ff;border-radius:3px;font-size:10px;">
+        <button class="btn full-width" id="btn-multiplayer" style="background:linear-gradient(90deg,#ff00ff,#00ffff);color:#000;font-weight:bold;font-size:11px;padding:6px;">
+          🌐 CREATE ROOM
+        </button>
+        <div style="display:flex;gap:3px;margin-top:4px;">
+          <input type="text" id="room-code-input" placeholder="Room code" maxlength="6"
+                 style="flex:1;padding:5px;background:#002200;color:#00ffff;border:1px solid #00ffff;border-radius:3px;font-size:11px;text-transform:uppercase;letter-spacing:2px;text-align:center;">
+          <button class="btn" id="btn-join-room" style="font-size:10px;padding:5px 8px;">JOIN</button>
+        </div>
+        <div id="multiplayer-status" style="font-size:9px;margin-top:4px;color:#888;text-align:center;">Create or join a room!</div>
+        <div id="player-list-v117" style="font-size:9px;margin-top:4px;max-height:60px;overflow-y:auto;"></div>
+      </div>
     </div>
 
     <!-- ⏱️ LEFT PANEL: TURN TIMER (agreement-colored multiplayer setting) -->
-    <div class="info-window compact lp-setting" style="border-color:#00ffff;">
-      <strong style="color:#00ffff">⏱️ TURN TIMER</strong>
-      <div style="font-size:8px;color:#888;margin:2px 0;">Right-click / long-press for presets</div>
-      <button id="turn-timer-btn" class="lp-btn full-width"
-              oncontextmenu="event.preventDefault();CHEMVENTUR.LeftPanelSync.openPresets();">
-        <span id="turn-timer-value">30s</span>
-      </button>
-      <input type="range" id="turn-timer-slider" min="1" max="61" value="30" style="width:100%;margin-top:4px;">
-      <div id="turn-timer-presets" class="lp-presets-menu">
-        <button class="btn small" onclick="CHEMVENTUR.LeftPanelSync.pickPreset(1)">1s</button>
-        <button class="btn small" onclick="CHEMVENTUR.LeftPanelSync.pickPreset(5)">5s</button>
-        <button class="btn small" onclick="CHEMVENTUR.LeftPanelSync.pickPreset(10)">10s</button>
-        <button class="btn small" onclick="CHEMVENTUR.LeftPanelSync.pickPreset(30)">30s</button>
-        <button class="btn small" onclick="CHEMVENTUR.LeftPanelSync.pickPreset(60)">60s</button>
-        <button class="btn small" onclick="CHEMVENTUR.LeftPanelSync.pickPreset(61)">∞</button>
+    <div class="lp-section" id="lp-sec-turntimer">
+      <div class="lp-section-header" onclick="CHEMVENTUR.UI.toggleSection('turntimer')" style="background:rgba(0,255,255,0.12);">
+        <span style="color:#00ffff">⏱️ TURN TIMER</span>
+        <span class="lp-section-arrow">▾</span>
+      </div>
+      <div class="lp-section-body">
+        <div class="lp-section-explain">How long everyone gets to program their move before a room turn locks in. Green means everyone in the room agrees; right-click / long-press for quick presets.</div>
+        <button id="turn-timer-btn" class="lp-btn full-width"
+                oncontextmenu="event.preventDefault();CHEMVENTUR.LeftPanelSync.openPresets();">
+          <span id="turn-timer-value">30s</span>
+        </button>
+        <input type="range" id="turn-timer-slider" min="1" max="61" value="30" style="width:100%;margin-top:4px;">
+        <div id="turn-timer-presets" class="lp-presets-menu">
+          <button class="btn small" onclick="CHEMVENTUR.LeftPanelSync.pickPreset(1)">1s</button>
+          <button class="btn small" onclick="CHEMVENTUR.LeftPanelSync.pickPreset(5)">5s</button>
+          <button class="btn small" onclick="CHEMVENTUR.LeftPanelSync.pickPreset(10)">10s</button>
+          <button class="btn small" onclick="CHEMVENTUR.LeftPanelSync.pickPreset(30)">30s</button>
+          <button class="btn small" onclick="CHEMVENTUR.LeftPanelSync.pickPreset(60)">60s</button>
+          <button class="btn small" onclick="CHEMVENTUR.LeftPanelSync.pickPreset(61)">∞</button>
+        </div>
       </div>
     </div>
     
@@ -204,16 +226,17 @@
   
   <div id="canvas-container">
     <canvas id="game-canvas"></canvas>
+  </div>
 
-    <!-- 📱 MOBILE CONTROLS: fire button + simplified gun picker -->
-    <div id="mobile-controls">
-      <div id="mobile-gun-picker">
-        <button id="mobile-gun-prev" class="mobile-ctrl-btn" title="Previous gun">‹</button>
-        <div id="mobile-gun-current" title="Long-press for gun options">⚛ Atom</div>
-        <button id="mobile-gun-next" class="mobile-ctrl-btn" title="Next gun">›</button>
-      </div>
-      <button id="mobile-fire-btn" title="Tap to fire, hold for rapid fire">🔫<br>FIRE</button>
+  <!-- 📱 MOBILE CONTROLS: pinned to the viewport (not the canvas), so they
+       never move even when the canvas slides over for the panel drawer -->
+  <div id="mobile-controls">
+    <div id="mobile-gun-picker">
+      <button id="mobile-gun-prev" class="mobile-ctrl-btn" title="Previous gun">‹</button>
+      <div id="mobile-gun-current" title="Long-press for gun options">⚛ Atom</div>
+      <button id="mobile-gun-next" class="mobile-ctrl-btn" title="Next gun">›</button>
     </div>
+    <button id="mobile-fire-btn" title="Tap to fire, hold for rapid fire">🔫<br>FIRE</button>
   </div>
   
   <div id="status-bar"></div>
