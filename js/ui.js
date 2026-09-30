@@ -36,6 +36,9 @@
 
       // 🔗 Shareable room links: prefill the join box from ?room=CODE
       this.applyRoomLinkParam();
+
+      // 🗂️ Restore which Left Panel sections were folded last time
+      this.restoreSections();
     },
 
     // 📱 Left panel drawer (phone-width screens): keeps the canvas
@@ -45,11 +48,75 @@
       if (!panel) return;
       const open = panel.classList.toggle('panel-open');
       document.getElementById('panel-backdrop')?.classList.toggle('visible', open);
+      document.body.classList.toggle('panel-open', open);
     },
 
     closePanel() {
       document.getElementById('left-panel')?.classList.remove('panel-open');
       document.getElementById('panel-backdrop')?.classList.remove('visible');
+      document.body.classList.remove('panel-open');
+    },
+
+    // ===== 🗂️ LEFT PANEL: foldable "taskbar" sections =====
+    // Collapsed = same live controls, just shrunk (CSS only); explanation
+    // text hides. State persists per-section in localStorage.
+    toggleSection(id) {
+      const el = document.getElementById('lp-sec-' + id);
+      if (!el) return;
+      const collapsed = el.classList.toggle('collapsed');
+      try {
+        localStorage.setItem('lp-section-' + id, collapsed ? '1' : '0');
+      } catch (e) { /* ignore (private mode, storage full, etc.) */ }
+    },
+
+    restoreSections() {
+      document.querySelectorAll('.lp-section[id^="lp-sec-"]').forEach(el => {
+        const id = el.id.replace('lp-sec-', '');
+        let collapsed = false;
+        try { collapsed = localStorage.getItem('lp-section-' + id) === '1'; } catch (e) { /* ignore */ }
+        el.classList.toggle('collapsed', collapsed);
+      });
+    },
+
+    // ===== 🖥️ SCREEN MODE MENU (the logo button) =====
+    toggleScreenModeMenu() {
+      document.getElementById('screen-mode-menu')?.classList.toggle('visible');
+    },
+
+    toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen?.().catch(e => {
+          this.showStatus('⚠️ Fullscreen blocked by browser: ' + e.message, 3000);
+        });
+      } else {
+        document.exitFullscreen?.();
+      }
+    },
+
+    // Orientation lock needs the page to be fullscreen first on most
+    // browsers, and iOS Safari doesn't support it at all outside an
+    // installed PWA — so this can genuinely fail, and we say so rather
+    // than pretend it always works.
+    async lockLandscape(strict) {
+      try {
+        if (!document.fullscreenElement) {
+          await document.documentElement.requestFullscreen?.();
+        }
+        if (screen.orientation?.lock) {
+          await screen.orientation.lock(strict ? 'landscape' : 'landscape-primary');
+          this.showStatus(strict ? '🔒 Landscape locked!' : '📱 Landscape requested', 2000);
+        } else {
+          throw new Error('not supported');
+        }
+      } catch (e) {
+        this.showStatus('⚠️ Rotation lock isn\'t supported on this browser — just rotate your phone 🙂', 4000);
+      }
+    },
+
+    unlockOrientation() {
+      try { screen.orientation?.unlock?.(); } catch (e) { /* ignore */ }
+      if (document.fullscreenElement) document.exitFullscreen?.();
+      this.showStatus('🔓 Orientation unlocked', 1500);
     },
 
     applyRoomLinkParam() {
@@ -353,17 +420,42 @@
         colliderBtn.style.color = game.colliderMode === 'NONE' ? '#fff' : '#000';
       }
       
-      document.getElementById('btn-gravity').textContent = 'Grav:' + ['None', 'Down', 'In', 'Out'][game.gravityMode];
-      document.getElementById('btn-boundary').textContent = 'Bound:' + ['Open', 'Bounce', 'Wrap', 'Kill'][game.boundaryMode];
-      document.getElementById('btn-grid').textContent = 'Grid:' + (CHEMVENTUR.PressureGrid.enabled ? 'ON' : 'OFF');
-      
+      // Gravity/boundary/grid used to only change their TEXT on click, so the
+      // button looked "frozen" at a glance — now the border/text color changes
+      // with the mode too, same as the collider button above.
+      const GRAV_COLORS = ['#888888', '#00ff41', '#00aaff', '#ff8800'];
+      const gravBtn = document.getElementById('btn-gravity');
+      gravBtn.textContent = 'Grav:' + ['None', 'Down', 'In', 'Out'][game.gravityMode];
+      gravBtn.style.borderColor = GRAV_COLORS[game.gravityMode];
+      gravBtn.style.color = GRAV_COLORS[game.gravityMode];
+
+      const BOUND_COLORS = ['#00ff41', '#ffaa00', '#00ffff', '#ff0044'];
+      const boundBtn = document.getElementById('btn-boundary');
+      boundBtn.textContent = 'Bound:' + ['Open', 'Bounce', 'Wrap', 'Kill'][game.boundaryMode];
+      boundBtn.style.borderColor = BOUND_COLORS[game.boundaryMode];
+      boundBtn.style.color = BOUND_COLORS[game.boundaryMode];
+
+      const gridOn = CHEMVENTUR.PressureGrid.enabled;
+      const gridBtn = document.getElementById('btn-grid');
+      gridBtn.textContent = 'Grid:' + (gridOn ? 'ON' : 'OFF');
+      gridBtn.style.borderColor = gridOn ? '#00ffff' : 'var(--neon-green)';
+      gridBtn.style.color = gridOn ? '#00ffff' : 'var(--neon-green)';
+      gridBtn.style.boxShadow = gridOn ? '0 0 8px #00ffff' : 'none';
+
       // Electron mode button
       const electronBtn = document.getElementById('btn-electron-mode');
       if (electronBtn && MolSys) {
         const mode = MolSys.getCurrentElectronMode();
         electronBtn.textContent = `${mode.icon} Electron: ${mode.name}`;
       }
-      
+
+      // Rain button
+      const rainBtn = document.getElementById('btn-rain');
+      if (rainBtn) {
+        rainBtn.textContent = game.rainActive ? '🌧️💧ON' : '🌧️💧';
+        rainBtn.style.opacity = game.rainActive ? '1' : '0.7';
+      }
+
       // Stage display
       this.updateStageDisplay();
     },
@@ -374,6 +466,7 @@
       if (stageEl && game.STAGES) {
         const stage = game.STAGES[game.stage];
         stageEl.textContent = `Stage ${game.stage} - ${stage.emoji} ${stage.name}`;
+        stageEl.style.color = game.stage === 0 ? '#ff8800' : game.stage === 1 ? '#00ff41' : '#00ffff';
       }
       this.updateStageButtons();
     },
@@ -1296,41 +1389,6 @@
     
     closePeriodicTable() {
       document.getElementById('periodic-table-panel').classList.remove('visible');
-    },
-    
-    // ===== STAGE DISPLAY UPDATE =====
-    updateStageDisplay() {
-      const Game = CHEMVENTUR.Game;
-      if (!Game) return;
-      
-      const stageInfo = Game.STAGES?.[Game.stage];
-      const display = document.getElementById('stage-display');
-      if (display && stageInfo) {
-        display.textContent = `${Game.stage} - ${stageInfo.emoji} ${stageInfo.name}`;
-        display.style.color = Game.stage === 0 ? '#ff8800' : 
-                              Game.stage === 1 ? '#00ff41' : '#00ffff';
-      }
-    },
-    
-    // ===== UPDATE BUTTONS STATE =====
-    updateButtons() {
-      const Game = CHEMVENTUR.Game;
-      if (!Game) return;
-      
-      // Update collider button
-      const colliderBtn = document.getElementById('btn-collider');
-      if (colliderBtn && Game.COLLIDER_MODES) {
-        const mode = Game.COLLIDER_MODES[Game.colliderMode];
-        colliderBtn.textContent = `💥${mode?.name || 'None'}`;
-        colliderBtn.style.borderColor = mode?.color || '#888888';
-      }
-      
-      // Update rain button
-      const rainBtn = document.getElementById('btn-rain');
-      if (rainBtn) {
-        rainBtn.textContent = Game.rainActive ? '🌧️💧ON' : '🌧️💧';
-        rainBtn.style.opacity = Game.rainActive ? '1' : '0.7';
-      }
     },
     
     // ===== 🛠️ GARAGE SYSTEM =====
